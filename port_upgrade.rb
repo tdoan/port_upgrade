@@ -31,6 +31,7 @@ class PortUpgrade
     @db.execute("create table remports(port text, dep text)")
 
     @ports = args.collect{|a| a}
+    @edges_seen = []
     true
   end
 
@@ -48,8 +49,11 @@ class PortUpgrade
     else
       parents = res.collect{|r| Struct::Edge.new(r[0],portname,i)}
       res.each do |r|
-        gp = get_parent_pairs(r[0],i+1)
-        parents += gp unless gp.size == 0
+        if (@edges_seen.find{|o| o === [r[0],i+1]}).nil?
+          @edges_seen << [r[0],i+i]
+          gp = get_parent_pairs(r[0],i+1)
+          parents += gp unless gp.size == 0
+        end
       end
     end
     parents.uniq
@@ -84,8 +88,8 @@ class PortUpgrade
 
 end
 
-dotsh = File.new('port_upgrade.sh','w')
 if __FILE__ == $PROGRAM_NAME
+  dotsh = File.new('port_upgrade.sh','w')
   #get the sqlite ports table up to date before using it to build remports table
   Ports::Utilities.traverse_receipts
   #get list of outdated ports by shelling out to port outdated and processing what we get back.
