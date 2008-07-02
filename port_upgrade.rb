@@ -107,7 +107,8 @@ if __FILE__ == $PROGRAM_NAME
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
   remports = []
-  while pu.db.query("select count(*) from remports").to_a.first[0].to_i > 0
+  stmt = db.prepare("select count(*) from remports")
+  while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
     temp.each do |o|
       installed = `port installed #{o}`.find_all{|l| (l =~ /The following/).nil? }.collect{|p| p.gsub(/ \(active\)/,"").strip}
@@ -118,7 +119,7 @@ if __FILE__ == $PROGRAM_NAME
     end
     #puts temp.join(",")
   end
-
+  stmt.close
   while remports.size > 0
     dotsh.puts("port install #{remports.pop}")
   end
