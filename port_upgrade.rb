@@ -23,14 +23,12 @@ class PortUpgrade
   attr_reader :db
 
   def initialize()
-    get_outdated
-    @db = SQLite3::Database.new('port_tree.db')
-    begin
-      @db.execute("drop table remports")
-    rescue SQLite3::SQLException
-    end
-    @db.execute("create table remports(port text, dep text)")
     @edges_seen = []
+    get_outdated
+    #get the sqlite ports table up to date before using it to build remports table
+    Ports::Utilities.traverse_receipts
+    @db = SQLite3::Database.new('port_tree.db')
+    setup_remports
     true
   end
 
@@ -45,6 +43,20 @@ class PortUpgrade
     @ports
   end
 
+  def setup_remports
+    begin
+      @db.execute("drop table remports")
+    rescue SQLite3::SQLException
+    end
+    @db.execute("create table remports(port text, dep text)")
+    @ports.each do |a|
+      parents = get_parent_pairs(a)
+      parents.each{|p| @db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
+      @db.execute("insert into remports values(\"#{a}\",\"\")") if @db.query("select * from remports where port = 'readline'").to_a.size == 0
+      #puts "#{a}: #{parents.size}"
+    end
+  end
+  
   def get_parents(portname)
     #$stderr.puts portname
     res = @db.query("select * from ports where dep = ?", portname)
@@ -99,15 +111,7 @@ class PortUpgrade
 end
 
 if __FILE__ == $PROGRAM_NAME
-  #get the sqlite ports table up to date before using it to build remports table
-  Ports::Utilities.traverse_receipts
   pu = PortUpgrade.new
-  pu.outdated.each do |a|
-    parents = pu.get_parent_pairs(a)
-    parents.each{|p| pu.db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
-    pu.db.execute("insert into remports values(\"#{a}\",\"\")") if pu.db.query("select * from remports where port = 'readline'").to_a.size == 0
-    #puts "#{a}: #{parents.size}"
-  end
   $stderr.puts "#{pu.db.query("select count(distinct port) from remports").to_a.first[0].to_i} ports to remove"
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
