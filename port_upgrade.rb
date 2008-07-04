@@ -22,11 +22,11 @@ end
 class PortUpgrade
   attr_reader :db
 
-  def initialize()
+  def initialize(path)
     @edges_seen = []
     get_outdated
     #get the sqlite ports table up to date before using it to build remports table
-    Ports::Utilities.traverse_receipts
+    Ports::Utilities.traverse_receipts(path)
     @db = SQLite3::Database.new('port_tree.db')
     setup_remports
     true
@@ -111,7 +111,7 @@ class PortUpgrade
 end
 
 if __FILE__ == $PROGRAM_NAME
-  pu = PortUpgrade.new
+  pu = PortUpgrade.new(ARGV[0])
   $stderr.puts "#{pu.db.query("select count(distinct port) from remports").to_a.first[0].to_i} ports to remove"
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
