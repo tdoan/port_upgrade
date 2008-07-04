@@ -22,17 +22,27 @@ end
 class PortUpgrade
   attr_reader :db
 
-  def initialize(args)
+  def initialize()
+    get_outdated
     @db = SQLite3::Database.new('port_tree.db')
     begin
       @db.execute("drop table remports")
     rescue SQLite3::SQLException
     end
     @db.execute("create table remports(port text, dep text)")
-
-    @ports = args.collect{|a| a}
     @edges_seen = []
     true
+  end
+
+  def get_outdated
+    #get list of outdated ports by shelling out to port outdated and processing what we get back.
+    $stderr.print "Running port outdated..."
+    @ports = `port outdated`.find_all{|l| (l =~ /(The following|No installed ports are outdated)/).nil? }.collect{|l| l.split[0]}
+    $stderr.puts "done"
+  end
+
+  def outdated
+    @ports
   end
 
   def get_parents(portname)
@@ -89,15 +99,10 @@ class PortUpgrade
 end
 
 if __FILE__ == $PROGRAM_NAME
-  dotsh = File.new('port_upgrade.sh','w')
   #get the sqlite ports table up to date before using it to build remports table
   Ports::Utilities.traverse_receipts
-  #get list of outdated ports by shelling out to port outdated and processing what we get back.
-  $stderr.print "Running port outdated..."
-  outdated = `port outdated`.find_all{|l| (l =~ /(The following|No installed ports are outdated)/).nil? }.collect{|l| l.split[0]}
-  $stderr.puts "done"
-  pu = PortUpgrade.new(outdated)
-  outdated.each do |a|
+  pu = PortUpgrade.new
+  pu.outdated.each do |a|
     parents = pu.get_parent_pairs(a)
     parents.each{|p| pu.db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
     pu.db.execute("insert into remports values(\"#{a}\",\"\")") if pu.db.query("select * from remports where port = 'readline'").to_a.size == 0
@@ -108,6 +113,7 @@ if __FILE__ == $PROGRAM_NAME
   #puts pu.get_depth('wireshark')
   remports = []
   stmt = pu.db.prepare("select count(*) from remports")
+  dotsh = File.new('port_upgrade.sh','w')
   while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
     temp.each do |o|
