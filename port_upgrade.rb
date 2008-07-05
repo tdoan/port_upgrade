@@ -22,11 +22,17 @@ end
 class PortUpgrade
   attr_reader :db
 
-  def initialize(path)
+  def initialize(args)
+    @path=args[0]
     @edges_seen = []
-    get_outdated
+    if args.size <= 1
+      get_outdated
+    else
+      @ports = args[1..-1]
+    end
+    $stderr.puts "Outdated #{@ports.join(',')}"
     #get the sqlite ports table up to date before using it to build remports table
-    Ports::Utilities.traverse_receipts(path)
+    Ports::Utilities.traverse_receipts(@path)
     @db = SQLite3::Database.new('port_tree.db')
     setup_remports
     true
@@ -64,7 +70,7 @@ class PortUpgrade
   end
 
   def get_parent_pairs(portname,i=1)
-    #$stderr.puts portname
+    $stderr.puts "get_parent_pairs: #{portname}, #{i}"
     res = @db.query("select * from deps where dep = ?", portname).to_a
     if res.size == 0
       parents = []
@@ -101,9 +107,13 @@ class PortUpgrade
   end
   
   def get_leaves
+    $stderr.print "get_leaves "
     ports = @db.query('select port from remports').to_a.flatten.sort.uniq
+    $stderr.print "ports: #{ports.size} "
     deps = @db.query('select dep from remports').to_a.flatten.sort.uniq
+    $stderr.print "deps: #{deps.size} "
     diff = (ports - deps).sort
+    $stderr.puts "diff: #{diff.size}"
     diff.each{|p| @db.execute("delete from remports where port = ?",p)}
     diff
   end
@@ -111,15 +121,18 @@ class PortUpgrade
 end
 
 if __FILE__ == $PROGRAM_NAME
-  pu = PortUpgrade.new(ARGV[0])
+  pu = PortUpgrade.new(ARGV)
+  $stderr.puts "PortUpgrade.new done"
   $stderr.puts "#{pu.db.query("select count(distinct port) from remports").to_a.first[0].to_i} ports to remove"
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
   remports = []
   stmt = pu.db.prepare("select count(*) from remports")
   dotsh = File.new('port_upgrade.sh','w')
+  $stderr.puts "port_upgrade.sh open for write"
   while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
+    break if temp.size == 0
     temp.each do |o|
       installed = `port installed #{o}`.find_all{|l| (l =~ /The following/).nil? }.collect{|p| p.gsub(/ \(active\)/,"").strip}
       `port installed #{o}`.find_all{|l| (l =~ /The following/).nil? }.collect{|p| p.gsub(/ \(active\)/,"").strip}.each do |q|

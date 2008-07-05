@@ -3,6 +3,9 @@ require 'find'
 require 'sqlite3'
 RECEIPT_PATH = '/opt/local/var/macports/receipts'
 
+# regex to match receipt file filenames and pull out version and variants
+#/(\w+(\.\w+)?(\.\d+)?(-\w+)?_\d+)((\+\w+)*)$/
+
 module Ports
   class Utilities
     def self.traverse_receipts(path=nil)
