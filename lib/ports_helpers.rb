@@ -41,7 +41,7 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(\"#{original_portname}\",\"#{original_depname}\")")
+              db.execute("insert into deps values(?,?)",original_portname,original_depname)
             end
           end
           if l =~ /depends_run (\{([^}]*)\}|([^ ]*))/
@@ -49,7 +49,7 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(\"#{original_portname}\",\"#{original_depname}\")")
+              db.execute("insert into deps values(?,?)",original_portname,original_depname)
             end
           end
         end
