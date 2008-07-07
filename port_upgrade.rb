@@ -123,7 +123,8 @@ end
 if __FILE__ == $PROGRAM_NAME
   pu = PortUpgrade.new(ARGV)
   $stderr.puts "PortUpgrade.new done"
-  $stderr.puts "#{pu.db.query("select count(distinct port) from remports").to_a.first[0].to_i} ports to remove"
+  to_remove = pu.db.query("select distinct port from remports").to_a
+  $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.collect{|p| p[0]}.join(',')}"
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
   remports = []
