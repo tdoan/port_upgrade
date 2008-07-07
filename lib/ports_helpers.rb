@@ -15,8 +15,9 @@ module Ports
         db.execute("drop table deps")
       rescue SQLite3::SQLException
       end
-      db.execute("create table ports(port text)")
+      db.execute("create table ports(port text,version text, variant text)")
       db.execute("create table deps(port text, dep text)")
+      db.execute("create unique index uniqdep on deps(port,dep)")
 
       #edges = []
       #dep_tree = []
@@ -27,9 +28,13 @@ module Ports
 
       Find.find(path||RECEIPT_PATH) do |filename|
         next unless filename =~ /.bz2$/
-        original_portname = filename.split("/")[-3]  #very unix centric
+        pieces = filename.split("/")
+        original_portname = pieces[-3]
+        md = /([^+]+)((\+\w+)*)/.match(pieces[-2]) #seperate version from variants
+        version = md[1]
+        variant = md[2]
         portname = filename.split("/")[-3].gsub(/(-|\.|\/)/,'_')  #very unix centric
-        db.execute("insert into ports values(\"#{portname}\")")
+        db.execute("insert into ports values(?,?,?)",original_portname,version,variant)
         #portnames << "#{portname}"
         reader = BZ2::Reader.new(File.open(filename))
         receipt_lines = reader.readlines
@@ -40,7 +45,10 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(\"#{original_portname}\",\"#{original_depname}\")")
+              begin
+                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              rescue SQLite3::SQLException
+              end
             end
           end
           if l =~ /depends_run (\{([^}]*)\}|([^ ]*))/
@@ -48,7 +56,10 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(\"#{original_portname}\",\"#{original_depname}\")")
+              begin
+                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              rescue SQLite3::SQLException
+              end
             end
           end
         end
