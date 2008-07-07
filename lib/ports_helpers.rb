@@ -14,6 +14,7 @@ module Ports
       end
       db.execute("create table ports(port text,version text, variant text)")
       db.execute("create table deps(port text, dep text)")
+      db.execute("create unique index uniqdep on deps(port,dep)")
 
       #edges = []
       #dep_tree = []
@@ -41,7 +42,10 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              begin
+                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              rescue SQLite3::SQLException
+              end
             end
           end
           if l =~ /depends_run (\{([^}]*)\}|([^ ]*))/
@@ -49,7 +53,10 @@ module Ports
             deps.split(" ").each do |d|
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
-              db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              begin
+                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+              rescue SQLite3::SQLException
+              end
             end
           end
         end
