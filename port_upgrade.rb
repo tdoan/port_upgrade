@@ -121,13 +121,12 @@ if __FILE__ == $PROGRAM_NAME
   while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
     temp.each do |o|
-      installed = `port installed #{o}`.find_all{|l| (l =~ /The following/).nil? }.collect{|p| p.gsub(/ \(active\)/,"").strip}
-      `port installed #{o}`.find_all{|l| (l =~ /The following/).nil? }.collect{|p| p.gsub(/ \(active\)/,"").strip}.each do |q|
-        dotsh.puts("port uninstall #{q}")
+      installed = pu.db.query("select port,version,variant from ports where port = ?",o).to_a
+      installed.each do |port|
+        dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]}")
+        remports.push "#{port[0]} #{port[2]}"
       end
-      remports.push installed.collect{|o| o.gsub(/ @[^+]*/," ")}.last
     end
-    #puts temp.join(",")
   end
   stmt.close
   while remports.size > 0
