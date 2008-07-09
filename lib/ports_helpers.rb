@@ -3,6 +3,12 @@ require 'find'
 require 'sqlite3'
 RECEIPT_PATH = '/opt/local/var/macports/receipts'
 
+class String
+  def dot_clean
+    return self.gsub(/[ +\/\.-]/,"_")
+  end
+end
+
 module Ports
   class Utilities
     def self.traverse_receipts(path=nil)
@@ -40,8 +46,8 @@ module Ports
           if l =~ /depends_lib (\{([^}]*)\}|([^ ]*))/
             deps = $2||$3
             deps.split(" ").each do |d|
-              original_depname = d.split(":")[1]
-              depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
+              original_depname = d.split(":").last
+              depname = d.split(":").last.gsub(/(-|\.|\/)/,'_')
               begin
                 db.execute("insert into deps values(?,?)",original_portname,original_depname)
               rescue SQLite3::SQLException

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require "sqlite3"
 require File.dirname(__FILE__) + "/lib/ports_helpers.rb"
-
+require 'port_tree'
 Struct.new('Edge',:port,:dep,:level)
 class Struct::Edge
   def <=>(other)
@@ -49,11 +49,20 @@ class PortUpgrade
     rescue SQLite3::SQLException
     end
     @db.execute("create table remports(port text, dep text)")
+    @db.execute("create unique index remportsdep on remports(port,dep)")
     @ports.each do |a|
       parents = get_parent_pairs(a)
-      parents.each{|p| @db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
+      begin
+        parents.each{|p| @db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
+      rescue SQLite3::SQLException
+        $stderr.puts "Dup insert into remports"
+      end
       @db.execute("insert into remports values(\"#{a}\",\"\")") if @db.query("select * from remports where port = 'readline'").to_a.size == 0
-      #puts "#{a}: #{parents.size}"
+    end
+    count=1
+    File.open("tree#{count}.dot",'w') do |f|
+      pt = table_to_tree('remports','remports','port','port','dep')
+      f.write(pt.to_dot)
     end
   end
   
@@ -108,6 +117,17 @@ class PortUpgrade
     diff
   end
 
+  def table_to_tree(portable,depstable,portcolumn,depcolumna,depcolumnb)
+    deps=nil
+    db.query("select #{depcolumna},#{depcolumnb} from #{depstable}") do |r|
+      deps = r.to_a
+    end
+    ports = nil
+    db.query("select distinct #{portcolumn} from #{portable}") do |r|
+      ports = r.to_a.flatten
+    end
+    PortTree.new(ports,deps)
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
