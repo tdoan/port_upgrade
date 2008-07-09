@@ -59,8 +59,7 @@ class PortUpgrade
       end
       @db.execute("insert into remports values(\"#{a}\",\"\")") if @db.query("select * from remports where port = 'readline'").to_a.size == 0
     end
-    count=1
-    File.open("tree#{count}.dot",'w') do |f|
+    File.open("remtree.dot",'w') do |f|
       pt = table_to_tree('remports','remports','port','port','dep')
       f.write(pt.to_dot)
     end
