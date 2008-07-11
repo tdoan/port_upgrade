@@ -63,7 +63,7 @@ class PortUpgrade
           @db.execute("insert or ignore into remports values(\"#{p.port}\",\"#{p.dep}\")")
         end
       rescue SQLite3::SQLException => exp
-        $stderr.puts "Dup insert into remports:  #{exp}}"
+        $stderr.puts "Dup insert into remports:  #{exp}}" if $DEBUG
       end
       @db.execute("insert into remports values(\"#{a}\",\"\")")
     end
@@ -81,7 +81,7 @@ class PortUpgrade
   end
 
   def get_parent_pairs(portname,i=1)
-    $stderr.puts "get_parent_pairs: #{portname}, #{i}"
+    $stderr.puts "get_parent_pairs: #{portname}, #{i}" if $DEBUG
     res = @db.query("select * from deps where dep = ?", portname).to_a
     if res.size == 0
       parents = []
@@ -118,13 +118,13 @@ class PortUpgrade
   end
   
   def get_leaves
-    $stderr.print "get_leaves "
+    $stderr.print "get_leaves " if $DEBUG
     ports = @db.query('select port from remports').to_a.flatten.sort.uniq
-    $stderr.print "ports: #{ports.size} "
+    $stderr.print "ports: #{ports.size} " if $DEBUG
     deps = @db.query('select dep from remports').to_a.flatten.sort.uniq
-    $stderr.print "deps: #{deps.size} "
+    $stderr.print "deps: #{deps.size} " if $DEBUG
     diff = (ports - deps).sort
-    $stderr.puts "diff: #{diff.size}"
+    $stderr.puts "diff: #{diff.size}" if $DEBUG
     diff.each{|p| @db.execute("delete from remports where port = ?",p)}
     diff
   end
@@ -144,7 +144,7 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   pu = PortUpgrade.new(ARGV)
-  $stderr.puts "PortUpgrade.new done"
+  $stderr.puts "PortUpgrade.new done" if $DEBUG
   to_remove = pu.db.query("select distinct port from remports").to_a
   $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.collect{|p| p[0]}.join(',')}"
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
@@ -152,7 +152,7 @@ if __FILE__ == $PROGRAM_NAME
   remports = []
   stmt = pu.db.prepare("select count(*) from remports")
   dotsh = File.new('port_upgrade.sh','w')
-  $stderr.puts "port_upgrade.sh open for write"
+  $stderr.puts "port_upgrade.sh open for write" if $DEBUG
   while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
     break if temp.size == 0
