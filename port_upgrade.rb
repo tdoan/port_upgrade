@@ -65,6 +65,7 @@ class PortUpgrade
       rescue SQLite3::SQLException => exp
         $stderr.puts "Dup insert into remports:  #{exp}}"
       end
+      @db.execute("insert into remports values(\"#{a}\",\"\")")
     end
     @db.execute('delete from remports where port="gimp" and dep="gimp-app"')
     File.open("remtree.dot",'w') do |f|
