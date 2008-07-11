@@ -165,6 +165,7 @@ if __FILE__ == $PROGRAM_NAME
     end
   end
   stmt.close
+  remports.uniq!
   while remports.size > 0
     dotsh.puts("port install #{remports.pop}")
   end
