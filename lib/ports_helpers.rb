@@ -31,6 +31,7 @@ module Ports
 
       Find.find(path||RECEIPT_PATH) do |filename|
         next unless filename =~ /.bz2$/
+        next unless File.stat(filename).file?
         pieces = filename.split("/")
         original_portname = pieces[-3]
         md = /([^+]+)((\+\w+)*)/.match(pieces[-2]) #seperate version from variants
