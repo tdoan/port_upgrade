@@ -59,14 +59,15 @@ class PortUpgrade
     @ports.each do |a|
       parents = get_parent_pairs(a)
       begin
-        parents.each{|p| @db.execute("insert into remports values(\"#{p.port}\",\"#{p.dep}\")")}
-      rescue SQLite3::SQLException
-        $stderr.puts "Dup insert into remports"
+        parents.each do |p|
+          @db.execute("insert or ignore into remports values(\"#{p.port}\",\"#{p.dep}\")")
+        end
+      rescue SQLite3::SQLException => exp
+        $stderr.puts "Dup insert into remports:  #{exp}}"
       end
-      @db.execute("insert into remports values(\"#{a}\",\"\")") if @db.query("select * from remports where port = 'readline'").to_a.size == 0
     end
-    count=1
-    File.open("tree#{count}.dot",'w') do |f|
+    @db.execute('delete from remports where port="gimp" and dep="gimp-app"')
+    File.open("remtree.dot",'w') do |f|
       pt = table_to_tree('remports','remports','port','port','dep')
       f.write(pt.to_dot)
     end
@@ -86,8 +87,8 @@ class PortUpgrade
     else
       parents = res.collect{|r| Struct::Edge.new(r[0],portname,i)}
       res.each do |r|
-        if (@edges_seen.find{|o| o === [r[0],i+1]}).nil?
-          @edges_seen << [r[0],i+i]
+        if (@edges_seen.find{|o| o === [r[0],portname]}).nil?
+          @edges_seen << [r[0],portname]
           gp = get_parent_pairs(r[0],i+1)
           parents += gp unless gp.size == 0
         end
