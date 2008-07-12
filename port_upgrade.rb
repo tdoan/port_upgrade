@@ -142,6 +142,23 @@ class PortUpgrade
   end
 end
 
+def choose_variant(portname,variants)
+  answer=false
+  while(!answer)
+    $stderr.puts "Please choose from list:"
+    variants.each_with_index{|v,i| $stderr.puts "#{i}: #{v=="" ? "(none)" : v}"}
+    $stderr.print "> "
+    reply = $stdin.gets
+    clean = (reply.strip =~ /-?[0-9]+/)
+    if (clean == 0)
+      answer = true
+    else
+      $stderr.puts "ERROR, try again."
+    end
+  end
+  return reply.to_i
+end
+
 if __FILE__ == $PROGRAM_NAME
   pu = PortUpgrade.new(ARGV)
   $stderr.puts "PortUpgrade.new done" if $DEBUG
@@ -150,6 +167,7 @@ if __FILE__ == $PROGRAM_NAME
   #parents.collect{|p| [p.port,p.dep]}.sort { |a, b| a[0] <=> b[0] }.each{|o| puts o.join("->")}
   #puts pu.get_depth('wireshark')
   remports = []
+  remvariants = Hash.new {|h,k| h[k] = Array.new}
   stmt = pu.db.prepare("select count(*) from remports")
   dotsh = File.new('port_upgrade.sh','w')
   $stderr.puts "port_upgrade.sh open for write" if $DEBUG
@@ -160,13 +178,21 @@ if __FILE__ == $PROGRAM_NAME
       installed = pu.db.query("select port,version,variant from ports where port = ?",o).to_a
       installed.each do |port|
         dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]}")
-        remports.push "#{port[0]} #{port[2]}"
+        remports.push(port[0])
+        remvariants[port[0]].push(port[2])
       end
     end
   end
   stmt.close
   remports.uniq!
   while remports.size > 0
-    dotsh.puts("port install #{remports.pop}")
+    port = remports.pop
+    if remvariants[port].uniq.size > 1
+      $stderr.puts "Found multiple variants for #{port}."
+      variantindex = choose_variant(port,remvariants[port])
+    else
+      variantindex = 0
+    end
+    dotsh.puts("port install #{port} #{remvariants[port][variantindex]}")
   end
 end
