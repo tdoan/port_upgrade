@@ -1,4 +1,18 @@
 #!/usr/bin/env ruby
+#
+# port_upgrade.rb: Main PortUpgrade class and command line interface code.
+#
+# ====================================================================
+# Copyright (c) 2008 Tony Doan <tdoan@tdoan.com>.  All rights reserved.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution.  The terms
+# are also available at http://github.com/tdoan/port_upgrade/tree/master/COPYING.
+# If newer versions of this license are posted there, you may use a
+# newer version instead, at your option.
+# ====================================================================
+#
+
 require "sqlite3"
 require File.dirname(__FILE__) + "/lib/ports_helpers.rb"
 require 'port_tree'

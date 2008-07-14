@@ -1,5 +1,12 @@
+port_upgrade
+2008-07-14
+
+Copyright (C) 2008 Tony Doan (tdoan@tdoan.com)
+
 #
-# port_tree.erb: Template for port_tree graph in the dot language.
+# something.rb: description
+# 
+# 
 #
 # ====================================================================
 # Copyright (c) 2008 Tony Doan <tdoan@tdoan.com>.  All rights reserved.
@@ -11,13 +18,6 @@
 # newer version instead, at your option.
 # ====================================================================
 #
-digraph darwinportsdeptree {
-center=0;
-margin=0.10;
-rotate=0;
-rankdir="LR";
-nodesep=.05;
-node [fixedsize=false, fontname="BitstreamVeraSans-Bold", fontsize="8.00", label="\N", color=red, shape=box];
+#
 
-<%= tree_data %>
-}
+
