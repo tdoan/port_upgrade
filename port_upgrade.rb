@@ -47,6 +47,10 @@ class PortUpgrade
     $stderr.puts "Outdated #{@ports.join(',')}"
     #get the sqlite ports table up to date before using it to build remports table
     Ports::Utilities.traverse_receipts(@path)
+    #Preserve ports list before messing with it
+    File.open("port_tree.#{Time.now.strftime("%Y-%m-%d:%H:%M:%S")}","w") do |f|
+      Ports::Utilities.dump_tree.sort.each {|entry| f.puts entry.join(" ")}
+    end
     @db = SQLite3::Database.new('port_tree.db')
     setup_remports
     true

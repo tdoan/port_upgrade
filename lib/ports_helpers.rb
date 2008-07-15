@@ -88,5 +88,16 @@ module Ports
     def breadth_first
       
     end
+    
+    def self.dump_tree
+      db = SQLite3::Database.new('port_tree.db')
+      ports = nil
+      db.query("select port,variant from ports") do |results|
+        ports = results.to_a
+      end
+      db.close
+      ports
+    end
+
   end
 end
