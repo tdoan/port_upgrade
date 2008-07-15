@@ -81,7 +81,7 @@ class PortUpgrade
       end
       @db.execute("insert into remports values(\"#{a}\",\"\")")
     end
-    @db.execute('delete from remports where port="gimp" and dep="gimp-app"')
+    @db.execute('delete from remports where port="gimp-app" and dep="gimp"')
     File.open("remtree.dot",'w') do |f|
       pt = table_to_tree('remports','remports','port','port','dep')
       f.write(pt.to_dot)
