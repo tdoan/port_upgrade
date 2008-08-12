@@ -12,7 +12,7 @@
 # newer version instead, at your option.
 # ====================================================================
 #
-
+require "rubygems"
 require "sqlite3"
 require File.dirname(__FILE__) + "/lib/ports_helpers.rb"
 require 'port_tree'
