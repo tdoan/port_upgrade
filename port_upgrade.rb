@@ -190,7 +190,7 @@ if __FILE__ == $PROGRAM_NAME
   dotsh = File.new('port_upgrade.sh','w')
   dotsh.chmod(0700)
   $stderr.puts "port_upgrade.sh open for write" if $DEBUG
-  dotsh.puts("#!/usr/bin/sh")
+  dotsh.puts("#!/bin/sh")
   while stmt.execute.to_a.first[0].to_i > 0
     temp = pu.get_leaves
     break if temp.size == 0
