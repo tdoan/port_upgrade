@@ -38,7 +38,11 @@ class PortUpgrade
   attr_reader :db
 
   def initialize(args)
-    @config = YAML::load(File.open('port_upgrade_conf.yml'))
+    begin
+      @config = YAML::load(File.open('port_upgrade_conf.yml'))
+    rescue Errno::ENOENT
+      $stderr.puts("No configuration loaded.")
+    end
     @path=args[0]
     @edges_seen = []
     if args.size <= 1
@@ -166,12 +170,14 @@ class PortUpgrade
   end
  
   def get_port_action(portname,type)
-    if @config.has_key?(:actions)
-      if @config[:actions].has_key?(portname)
-        if @config[:actions][portname].has_key?(type)
-          @config[:actions][portname][type]
-        else
-          nil
+    unless @config.nil?
+      if @config.has_key?(:actions)
+        if @config[:actions].has_key?(portname)
+          if @config[:actions][portname].has_key?(type)
+            @config[:actions][portname][type]
+          else
+            nil
+          end
         end
       end
     end
