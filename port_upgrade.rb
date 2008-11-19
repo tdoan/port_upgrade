@@ -14,6 +14,7 @@
 #
 require "rubygems"
 require "sqlite3"
+require "yaml"
 require File.dirname(__FILE__) + "/lib/ports_helpers.rb"
 require 'port_tree'
 Struct.new('Edge',:port,:dep,:level)
@@ -37,6 +38,7 @@ class PortUpgrade
   attr_reader :db
 
   def initialize(args)
+    @config = YAML::load(File.open('port_upgrade_conf.yml'))
     @path=args[0]
     @edges_seen = []
     if args.size <= 1
@@ -147,6 +149,34 @@ class PortUpgrade
     diff
   end
 
+  def get_before_uninstall(portname)
+    get_port_action(portname,:before_uninstall)
+  end
+  
+  def get_after_uninstall(portname)
+    get_port_action(portname,:after_uninstall)
+  end
+
+  def get_before_install(portname)
+    get_port_action(portname,:before_install)
+  end
+
+  def get_after_install(portname)
+    get_port_action(portname,:after_install)
+  end
+ 
+  def get_port_action(portname,type)
+    if @config.has_key?(:actions)
+      if @config[:actions].has_key?(portname)
+        if @config[:actions][portname].has_key?(type)
+          @config[:actions][portname][type]
+        else
+          nil
+        end
+      end
+    end
+  end
+  
   def table_to_tree(portable,depstable,portcolumn,depcolumna,depcolumnb)
     deps=nil
     db.query("select #{depcolumna},#{depcolumnb} from #{depstable}") do |r|
@@ -197,7 +227,11 @@ if __FILE__ == $PROGRAM_NAME
     temp.each do |o|
       installed = pu.db.query("select port,version,variant from ports where port = ?",o).to_a
       installed.each do |port|
+        bu = pu.get_before_uninstall(port[0])
+        dotsh.puts(bu) unless bu.nil?
         dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]}")
+        au = pu.get_after_uninstall(port[0])
+        dotsh.puts(au) unless au.nil?
         remports.push(port[0])
         remvariants[port[0]].push(port[2])
       end
@@ -213,6 +247,10 @@ if __FILE__ == $PROGRAM_NAME
     else
       variantindex = 0
     end
+    bi = pu.get_before_install(port)
+    dotsh.puts(bi) unless bi.nil?
     dotsh.puts("port install #{port} #{remvariants[port][variantindex]}")
+    ai = pu.get_after_install(port)
+    dotsh.puts(ai) unless ai.nil?
   end
 end
