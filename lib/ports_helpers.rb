@@ -15,7 +15,6 @@
 require 'bz2'
 require 'find'
 require 'sqlite3'
-RECEIPT_PATH = '/opt/local/var/macports/receipts'
 
 class String
   def dot_clean
@@ -24,8 +23,51 @@ class String
 end
 
 module Ports
+  RECEIPT_PATH = '/opt/local/var/macports/receipts'
   class Utilities
-    def self.traverse_receipts(path=nil)
+
+    def breadth_first
+      
+    end
+    
+    def self.dump_tree
+      db = SQLite3::Database.new('port_tree.db')
+      ports = nil
+      db.query("select port,variant from ports") do |results|
+        ports = results.to_a
+      end
+      db.close
+      ports
+    end
+
+    def self.cmp_vers(versa,versb)
+      sa = versa.tr("._-","")
+      sb = versb.tr("._-","")
+      a=sa.to_i
+      b=sb.to_i
+      #a==0 ? asize=0 : asize = Math.log10(a).to_i
+      asize=sa.length
+      #b==0 ? bsize=0 : bsize = Math.log10(b).to_i
+      bsize=sb.length
+      diff = asize-bsize
+      if diff < 0
+        a = a * (10 ** diff.abs)
+      elsif diff > 0
+        b = b * (10 ** diff.abs)
+      end
+      a <=> b
+    end
+  end
+  
+  class Port
+  end
+  
+  class PortTree
+    def initialize(path=nil)
+      traverse_receipts(path)
+    end
+
+    def traverse_receipts(path=nil)
       db = SQLite3::Database.new('port_tree.db')
       begin
         db.execute("drop table ports")
@@ -85,36 +127,9 @@ module Ports
     db.close
     end
 
-    def breadth_first
-      
-    end
-    
-    def self.dump_tree
-      db = SQLite3::Database.new('port_tree.db')
-      ports = nil
-      db.query("select port,variant from ports") do |results|
-        ports = results.to_a
-      end
-      db.close
-      ports
-    end
-
-    def self.cmp_vers(versa,versb)
-      sa = versa.tr("._-","")
-      sb = versb.tr("._-","")
-      a=sa.to_i
-      b=sb.to_i
-      #a==0 ? asize=0 : asize = Math.log10(a).to_i
-      asize=sa.length
-      #b==0 ? bsize=0 : bsize = Math.log10(b).to_i
-      bsize=sb.length
-      diff = asize-bsize
-      if diff < 0
-        a = a * (10 ** diff.abs)
-      elsif diff > 0
-        b = b * (10 ** diff.abs)
-      end
-      a <=> b
-    end
   end
+  
+  class PortDB
+  end
+
 end
