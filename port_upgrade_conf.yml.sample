@@ -1,0 +1,7 @@
+--- 
+:actions:
+  ruby: 
+    :after_uninstall: rm -rf /opt/local/share/ri
+  ImageMagick:
+    :before_uninstall: gem uninstall rmagick
+    :after_install: gem install rmagick
