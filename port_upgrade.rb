@@ -197,7 +197,7 @@ if __FILE__ == $PROGRAM_NAME
     temp.each do |o|
       installed = pu.db.query("select port,version,variant from ports where port = ?",o).to_a
       installed.each do |port|
-        dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]}")
+        dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]} || exit -1")
         remports.push(port[0])
         remvariants[port[0]].push(port[2])
       end
@@ -213,6 +213,6 @@ if __FILE__ == $PROGRAM_NAME
     else
       variantindex = 0
     end
-    dotsh.puts("port install #{port} #{remvariants[port][variantindex]}")
+    dotsh.puts("port install #{port} #{remvariants[port][variantindex]} || exit -1")
   end
 end
