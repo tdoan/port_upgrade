@@ -235,7 +235,7 @@ if __FILE__ == $PROGRAM_NAME
       installed.each do |port|
         bu = pu.get_before_uninstall(port[0])
         dotsh.puts(bu) unless bu.nil?
-        dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]}")
+        dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]} || exit -1")
         au = pu.get_after_uninstall(port[0])
         dotsh.puts(au) unless au.nil?
         remports.push(port[0])
@@ -255,7 +255,7 @@ if __FILE__ == $PROGRAM_NAME
     end
     bi = pu.get_before_install(port)
     dotsh.puts(bi) unless bi.nil?
-    dotsh.puts("port install #{port} #{remvariants[port][variantindex]}")
+    dotsh.puts("port install #{port} #{remvariants[port][variantindex]} || exit -1")
     ai = pu.get_after_install(port)
     dotsh.puts(ai) unless ai.nil?
   end
