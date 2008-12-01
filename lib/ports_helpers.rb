@@ -99,5 +99,22 @@ module Ports
       ports
     end
 
+    def self.cmp_vers(versa,versb)
+      sa = versa.tr("._-","")
+      sb = versb.tr("._-","")
+      a=sa.to_i
+      b=sb.to_i
+      #a==0 ? asize=0 : asize = Math.log10(a).to_i
+      asize=sa.length
+      #b==0 ? bsize=0 : bsize = Math.log10(b).to_i
+      bsize=sb.length
+      diff = asize-bsize
+      if diff < 0
+        a = a * (10 ** diff.abs)
+      elsif diff > 0
+        b = b * (10 ** diff.abs)
+      end
+      a <=> b
+    end
   end
 end
