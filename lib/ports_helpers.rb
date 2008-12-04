@@ -30,16 +30,6 @@ module Ports
       
     end
     
-    def self.dump_tree
-      db = SQLite3::Database.new('port_tree.db')
-      ports = nil
-      db.query("select port,variant from ports") do |results|
-        ports = results.to_a
-      end
-      db.close
-      ports
-    end
-
     def self.cmp_vers(versa,versb)
       sa = versa.tr("._-","")
       sb = versb.tr("._-","")
@@ -67,6 +57,27 @@ module Ports
       traverse_receipts(path)
     end
 
+    def size
+      s=nil
+      get_db do |db|
+        db.query("select count(*) from ports") do |results|
+          s = results.first[0].to_i
+        end
+      end
+      return s
+    end
+
+    def dump_tree
+      ports = nil
+      get_db do |db|
+        db.query("select port,variant from ports order by port") do |results|
+          ports = results.to_a
+        end
+      end
+      ports
+    end
+
+private
     def traverse_receipts(path=nil)
       db = SQLite3::Database.new('port_tree.db')
       begin
@@ -126,10 +137,68 @@ module Ports
       end
     db.close
     end
-
+    def get_db
+      db = SQLite3::Database.new('port_tree.db')
+      yield db
+      db.close
+    end
   end
   
   class PortDB
+    def initialize
+      @installed = PortTree.new
+    end
+    
+    def method_name
+      
+    end
+  end
+
+  class Portfile
+    def initialize(path)
+      @path = path
+    end
+
+    def version
+      @version ||= find_vers
+    end
+
+    private
+    def find_vers
+      v=nil
+      rev=nil
+      vars = {}
+      portfile = File.new(@path)
+      portfile.each do |line|
+        case line
+        when /^set\s+(\S+)\s+(\S+)/
+          vars[$1] = $2
+          #$stderr.puts "Var: #{$1}  Val: #{$2}"
+        when /^version\s+([^\s]+)/
+          v = $1
+          while(v =~ /(\$\{([^}]+)\})/) do
+            if vars.has_key?($2)
+              v[$1] = vars[$2] 
+            else
+              break
+            end
+            #$stderr.puts "\n\nREPLACE(#{@path}): #{$1} #{vars[$2]} #{v}\n"
+          end
+          #break
+        when /^revision\s+([^\s]+)/
+          rev = $1
+          #$stderr.puts "revision found #{rev}"
+        when /\w+\.setup\s+(\S+)? ([\S]+)/
+          v = $2 if v.nil?
+          break
+        when /(\S+)\s+([^$]+)$/
+          vars[$1] = $2
+        end
+      end
+      rev = "0" if rev.nil?
+      v = v +"_"+rev
+      return v
+    end
   end
 
 end
