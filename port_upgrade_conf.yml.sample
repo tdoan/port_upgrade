@@ -2,6 +2,10 @@
 :actions:
   ruby: 
     :after_uninstall: rm -rf /opt/local/share/ri
+  ncursesw:
+    :after_uninstall: rm -rf /opt/local/share/terminfo
   ImageMagick:
     :before_uninstall: gem uninstall rmagick
     :after_install: gem install rmagick
+  python25:
+    :after_install: python_select python25
