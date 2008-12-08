@@ -24,6 +24,25 @@ end
 
 module Ports
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
+  MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
+  
+  Struct.new('Edge',:port,:dep,:level)
+  class Struct::Edge
+    def <=>(other)
+      portdif = self.port <=> other.port
+      depdif = self.dep <=> other.dep
+      if self.port == other.port and self.dep == other.dep and self.level == other.level
+        return 0
+      elsif portdif != 0
+        return portdif
+      elsif depdif != 0
+        return depdif
+      else
+        return self.level <=> other.level
+      end
+    end
+  end
+  
   class Utilities
 
     def breadth_first
@@ -77,6 +96,20 @@ module Ports
       ports
     end
 
+    def installed
+      ports = nil
+      get_db do |db|
+        db.query("select port from ports order by port") do |results|
+          ports = results.to_a.flatten
+        end
+      end
+      ports
+    end
+
+    def dump_seq(outdated)
+      setup_remports(outdated) unless outdated.nil?
+    end
+
 private
     def traverse_receipts(path=nil)
       db = SQLite3::Database.new('port_tree.db')
@@ -100,6 +133,7 @@ private
         next unless filename =~ /.bz2$/
         next unless File.stat(filename).file?
         pieces = filename.split("/")
+        next unless pieces.size == 9
         original_portname = pieces[-3]
         md = /([^+]+)((\+\w+)*)/.match(pieces[-2]) #seperate version from variants
         version = md[1]
@@ -137,6 +171,52 @@ private
       end
     db.close
     end
+
+    def get_parent_pairs(db,portname,i=1)
+      $stderr.puts "get_parent_pairs: #{portname}, #{i}" if $DEBUG
+      res = db.query("select * from deps where dep = ?", portname).to_a
+      if res.size == 0
+        parents = []
+      else
+        parents = res.collect{|r| Struct::Edge.new(r[0],portname,i)}
+        res.each do |r|
+          if (@edges_seen.find{|o| o === [r[0],portname]}).nil?
+            @edges_seen << [r[0],portname]
+            gp = get_parent_pairs(r[0],i+1)
+            parents += gp unless gp.size == 0
+          end
+        end
+      end
+      parents.uniq
+    end
+
+    def setup_remports(outdated)
+      get_db do |db|
+        begin
+          db.execute("drop table remports")
+        rescue SQLite3::SQLException
+        end
+        db.execute("create table remports(port text, dep text)")
+        db.execute("create unique index remportsdep on remports(port,dep)")
+        outdated.each do |a|
+          parents = get_parent_pairs(db,a)
+          begin
+            parents.each do |p|
+              db.execute("insert or ignore into remports values(\"#{p.port}\",\"#{p.dep}\")")
+            end
+          rescue SQLite3::SQLException => exp
+            $stderr.puts "Dup insert into remports:  #{exp}}" if $DEBUG
+          end
+          db.execute("insert into remports values(\"#{a}\",\"\")")
+        end
+        db.execute('delete from remports where port="gimp-app" and dep="gimp"')
+        File.open("remtree.dot",'w') do |f|
+          pt = table_to_tree('remports','remports','port','port','dep')
+          f.write(pt.to_dot)
+        end
+      end
+    end
+
     def get_db
       db = SQLite3::Database.new('port_tree.db')
       yield db
@@ -145,11 +225,51 @@ private
   end
   
   class PortDB
-    def initialize
-      @installed = PortTree.new
+    def initialize(outdated=nil)
+      @pt = PortTree.new
+      @installed = @pt.installed
+      @outdated = outdated
+    end
+
+    def installed
+      @installed
     end
     
-    def method_name
+    def port_tree
+      @pt
+    end
+
+    def dump_tree
+      @installed.dump_tree
+    end
+
+    def outdated(reload = true)
+      return @outdated unless @outdated.nil? or reload == true
+      @outdated = []
+      @installed.each do |port|
+        d = File.join(Ports::RECEIPT_PATH,port)
+        Dir.entries(d)[2..-1].each do |version|
+          d2 = File.join(d,version,'receipt.bz2')
+          reader = BZ2::Reader.new(File.new(d2))
+          lines = reader.readlines
+          cats = []
+          lines.collect do |line|
+            md = /categories (\{([^}]*)\}|([^ ]*))/.match(line)
+            unless md.nil?
+              cats << (md[2].nil? ? md[1] : md[2].split.first)
+            end
+          end
+          portfile_path = File.join(MACPORTS_DB,cats.flatten,port,'Portfile')
+          e = File.exist?(portfile_path)
+          curver = Portfile.new(portfile_path).version
+          #puts "%-32s%s < %s" %[port,version.split('+').first,curver] if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+          @outdated << port if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+        end
+      end
+      @outdated
+    end
+
+    def upgrade
       
     end
   end
