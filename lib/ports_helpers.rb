@@ -238,7 +238,7 @@ module Ports
     def to_remove
       return @to_remove unless @to_remove.nil?
       @pt.setup_remports(outdated)
-      @db.query("select distinct port from remports") do |rs|
+      @db.query("select distinct port from remports order by port") do |rs|
         @to_remove = rs.to_a
       end
     end
