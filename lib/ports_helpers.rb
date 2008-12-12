@@ -268,7 +268,7 @@ module Ports
       diff
     end
     
-    def outdated(reload = true)
+    def outdated(reload = false)
       return @outdated unless @outdated.nil? or reload == true
       @outdated = []
       @installed.each do |port|
