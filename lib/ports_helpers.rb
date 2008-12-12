@@ -73,9 +73,10 @@ module Ports
 
   class PortTree
     def initialize(pdb,path=nil)
+      @path=path
       @edges_seen = []
       @pdb = pdb
-      traverse_receipts(path)
+      traverse_receipts
     end
 
     def size
@@ -86,6 +87,9 @@ module Ports
       return s
     end
 
+    def receipt_path
+      @path || RECEIPT_PATH
+    end
     def dump_tree
       ports = nil
       @pdb.db.query("select port,variant from ports order by port") do |results|
@@ -132,7 +136,7 @@ module Ports
     end
 
     private
-    def traverse_receipts(path=nil)
+    def traverse_receipts
       begin
         @pdb.db.execute("drop table ports")
         @pdb.db.execute("drop table deps")
@@ -142,7 +146,7 @@ module Ports
       @pdb.db.execute("create table deps(port text, dep text)")
       @pdb.db.execute("create unique index uniqdep on deps(port,dep)")
 
-      Find.find(path||RECEIPT_PATH) do |filename|
+      Find.find(receipt_path) do |filename|
         next unless filename =~ /.bz2$/
         next unless File.stat(filename).file?
         pieces = filename.split("/")
@@ -207,9 +211,9 @@ module Ports
   end
 
   class PortsDB
-    def initialize(outdated=nil)
+    def initialize(path=nil,outdated=nil)
       @db = SQLite3::Database.new('port_tree.db')
-      @pt = PortTree.new(self)
+      @pt = PortTree.new(self,path)
       @installed = @pt.installed
       @outdated = outdated
       @to_remove = nil
@@ -268,7 +272,7 @@ module Ports
       return @outdated unless @outdated.nil? or reload == true
       @outdated = []
       @installed.each do |port|
-        d = File.join(Ports::RECEIPT_PATH,port)
+        d = File.join(@pt.receipt_path,port)
         Dir.entries(d)[2..-1].each do |version|
           d2 = File.join(d,version,'receipt.bz2')
           reader = BZ2::Reader.new(File.new(d2))
@@ -287,7 +291,7 @@ module Ports
           @outdated << port if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
         end
       end
-      @outdated
+      @outdated.uniq
     end
 
     def upgrade

@@ -36,7 +36,9 @@ def choose_variant(portname,variants)
 end
 
 if __FILE__ == $PROGRAM_NAME
-  pdb = PortsDB.new
+  path = nil
+  path = ARGV[0] unless ARGV.size < 1
+  pdb = PortsDB.new(path)
   #puts pdb.outdated
   to_remove = pdb.to_remove
   $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
