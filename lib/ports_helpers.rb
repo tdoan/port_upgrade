@@ -25,7 +25,7 @@ end
 module Ports
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
-  
+
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
     def <=>(other)
@@ -42,13 +42,13 @@ module Ports
       end
     end
   end
-  
+
   class Utilities
 
     def breadth_first
-      
+
     end
-    
+
     def self.cmp_vers(versa,versb)
       sa = versa.tr("._-","")
       sb = versb.tr("._-","")
@@ -67,67 +67,80 @@ module Ports
       a <=> b
     end
   end
-  
+
   class Port
   end
-  
+
   class PortTree
-    def initialize(path=nil)
+    def initialize(pdb,path=nil)
+      @edges_seen = []
+      @pdb = pdb
       traverse_receipts(path)
     end
 
     def size
       s=nil
-      get_db do |db|
-        db.query("select count(*) from ports") do |results|
-          s = results.first[0].to_i
-        end
+      @pdb.db.query("select count(*) from ports") do |results|
+        s = results.first[0].to_i
       end
       return s
     end
 
     def dump_tree
       ports = nil
-      get_db do |db|
-        db.query("select port,variant from ports order by port") do |results|
-          ports = results.to_a
-        end
+      @pdb.db.query("select port,variant from ports order by port") do |results|
+        ports = results.to_a
       end
       ports
     end
 
     def installed
       ports = nil
-      get_db do |db|
-        db.query("select port from ports order by port") do |results|
-          ports = results.to_a.flatten
-        end
+      @pdb.db.query("select port from ports order by port") do |results|
+        ports = results.to_a.flatten
       end
       ports
     end
 
     def dump_seq(outdated)
-      setup_remports(outdated) unless outdated.nil?
+      #setup_remports(outdated) unless outdated.nil?
     end
 
-private
-    def traverse_receipts(path=nil)
-      db = SQLite3::Database.new('port_tree.db')
+    def setup_remports(outdated)
       begin
-        db.execute("drop table ports")
-        db.execute("drop table deps")
+        @pdb.db.execute("drop table remports")
       rescue SQLite3::SQLException
       end
-      db.execute("create table ports(port text,version text, variant text)")
-      db.execute("create table deps(port text, dep text)")
-      db.execute("create unique index uniqdep on deps(port,dep)")
+      @pdb.db.execute("create table remports(port text, dep text)")
+      @pdb.db.execute("create unique index remportsdep on remports(port,dep)")
+      outdated.each do |a|
+        parents = get_parent_pairs(a)
+        begin
+          parents.each do |p|
+            @pdb.db.execute("insert or ignore into remports values(\"#{p.port}\",\"#{p.dep}\")")
+          end
+        rescue SQLite3::SQLException => exp
+          $stderr.puts "Dup insert into remports:  #{exp}}" if $DEBUG
+        end
+        @pdb.db.execute("insert into remports values(\"#{a}\",\"\")")
+      end
+      @pdb.db.execute('delete from remports where port="gimp-app" and dep="gimp"')
+      #File.open("remtree.dot",'w') do |f|
+      #  pt = table_to_tree('remports','remports','port','port','dep')
+      #  f.write(pt.to_dot)
+      #end
+    end
 
-      #edges = []
-      #dep_tree = []
-      #@dep_hash = Hash.new{|h,k| h[k] = Array.new}
-      #@rev_dep_hash = Hash.new{|h,k| h[k] = Array.new}
-      #v_count = Hash.new{|h,k| h[k]=0}
-      #portnames=[]
+    private
+    def traverse_receipts(path=nil)
+      begin
+        @pdb.db.execute("drop table ports")
+        @pdb.db.execute("drop table deps")
+      rescue SQLite3::SQLException
+      end
+      @pdb.db.execute("create table ports(port text,version text, variant text)")
+      @pdb.db.execute("create table deps(port text, dep text)")
+      @pdb.db.execute("create unique index uniqdep on deps(port,dep)")
 
       Find.find(path||RECEIPT_PATH) do |filename|
         next unless filename =~ /.bz2$/
@@ -139,7 +152,7 @@ private
         version = md[1]
         variant = md[2]
         portname = filename.split("/")[-3].gsub(/(-|\.|\/)/,'_')  #very unix centric
-        db.execute("insert into ports values(?,?,?)",original_portname,version,variant)
+        @pdb.db.execute("insert into ports values(?,?,?)",original_portname,version,variant)
         #portnames << "#{portname}"
         reader = BZ2::Reader.new(File.open(filename))
         receipt_lines = reader.readlines
@@ -151,7 +164,7 @@ private
               original_depname = d.split(":").last
               depname = d.split(":").last.gsub(/(-|\.|\/)/,'_')
               begin
-                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+                @pdb.db.execute("insert into deps values(?,?)",original_portname,original_depname)
               rescue SQLite3::SQLException
               end
             end
@@ -162,19 +175,19 @@ private
               original_depname = d.split(":")[1]
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
               begin
-                db.execute("insert into deps values(?,?)",original_portname,original_depname)
+                @pdb.db.execute("insert into deps values(?,?)",original_portname,original_depname)
               rescue SQLite3::SQLException
               end
             end
           end
         end
       end
-    db.close
     end
-
-    def get_parent_pairs(db,portname,i=1)
+    
+    def get_parent_pairs(portname,i=1)
       $stderr.puts "get_parent_pairs: #{portname}, #{i}" if $DEBUG
-      res = db.query("select * from deps where dep = ?", portname).to_a
+      rs = @pdb.db.query("select * from deps where dep = ?", portname)
+      res = rs.to_a
       if res.size == 0
         parents = []
       else
@@ -187,54 +200,33 @@ private
           end
         end
       end
+      rs.close
       parents.uniq
     end
 
-    def setup_remports(outdated)
-      get_db do |db|
-        begin
-          db.execute("drop table remports")
-        rescue SQLite3::SQLException
-        end
-        db.execute("create table remports(port text, dep text)")
-        db.execute("create unique index remportsdep on remports(port,dep)")
-        outdated.each do |a|
-          parents = get_parent_pairs(db,a)
-          begin
-            parents.each do |p|
-              db.execute("insert or ignore into remports values(\"#{p.port}\",\"#{p.dep}\")")
-            end
-          rescue SQLite3::SQLException => exp
-            $stderr.puts "Dup insert into remports:  #{exp}}" if $DEBUG
-          end
-          db.execute("insert into remports values(\"#{a}\",\"\")")
-        end
-        db.execute('delete from remports where port="gimp-app" and dep="gimp"')
-        File.open("remtree.dot",'w') do |f|
-          pt = table_to_tree('remports','remports','port','port','dep')
-          f.write(pt.to_dot)
-        end
-      end
-    end
-
-    def get_db
-      db = SQLite3::Database.new('port_tree.db')
-      yield db
-      db.close
-    end
   end
-  
-  class PortDB
+
+  class PortsDB
     def initialize(outdated=nil)
-      @pt = PortTree.new
+      @db = SQLite3::Database.new('port_tree.db')
+      @pt = PortTree.new(self)
       @installed = @pt.installed
       @outdated = outdated
+      @to_remove = nil
     end
 
     def installed
       @installed
     end
+
+    def db
+      @db
+    end
     
+    def close
+      @db.close
+    end
+
     def port_tree
       @pt
     end
@@ -243,6 +235,14 @@ private
       @installed.dump_tree
     end
 
+    def to_remove
+      return @to_remove unless @to_remove.nil?
+      @pt.setup_remports(outdated)
+      @db.query("select distinct port from remports") do |rs|
+        @to_remove = rs.to_a
+      end
+    end
+    
     def outdated(reload = true)
       return @outdated unless @outdated.nil? or reload == true
       @outdated = []
@@ -270,7 +270,8 @@ private
     end
 
     def upgrade
-      
+      @pt.setup_remports(outdated) if @to_remove.nil?
+      true
     end
   end
 
