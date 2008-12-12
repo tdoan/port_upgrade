@@ -213,6 +213,11 @@ module Ports
       @installed = @pt.installed
       @outdated = outdated
       @to_remove = nil
+      begin
+        @config = YAML::load(File.open('port_upgrade_conf.yml'))
+      rescue Errno::ENOENT
+        $stderr.puts("No configuration loaded.")
+      end
     end
 
     def installed
@@ -241,6 +246,22 @@ module Ports
       @db.query("select distinct port from remports order by port") do |rs|
         @to_remove = rs.to_a
       end
+    end
+
+    def get_leaves
+      $stderr.print "get_leaves " if $DEBUG
+      rs = @db.query('select port from remports')
+      ports = rs.to_a.flatten.sort.uniq
+      rs.close
+      $stderr.print "ports: #{ports.size} " if $DEBUG
+      rs = @db.query('select dep from remports')
+      deps = rs.to_a.flatten.sort.uniq
+      rs.close
+      $stderr.print "deps: #{deps.size} " if $DEBUG
+      diff = (ports - deps).sort
+      $stderr.puts "diff: #{diff.size}" if $DEBUG
+      diff.each{|p| @db.execute("delete from remports where port = ?",p)}
+      diff
     end
     
     def outdated(reload = true)
@@ -271,8 +292,82 @@ module Ports
 
     def upgrade
       @pt.setup_remports(outdated) if @to_remove.nil?
+      remports = []
+      remvariants = Hash.new {|h,k| h[k] = Array.new}
+      stmt = @db.prepare("select count(*) from remports")
+      dotsh = File.new('port_upgrade.sh','w')
+      dotsh.chmod(0700)
+      $stderr.puts "port_upgrade.sh open for write" if $DEBUG
+      dotsh.puts("#!/bin/sh")
+      while stmt.execute.to_a.first[0].to_i > 0
+          temp = get_leaves
+          break if temp.size == 0
+          temp.each do |o|
+            @db.query("select port,version,variant from ports where port = ?",o) do |rs|
+              installed = rs.to_a
+              installed.each do |port|
+                bu = get_before_uninstall(port[0])
+                dotsh.puts(bu) unless bu.nil?
+                dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]} || exit -1")
+                au = get_after_uninstall(port[0])
+                dotsh.puts(au) unless au.nil?
+                remports.push(port[0])
+                remvariants[port[0]].push(port[2])
+              end
+            end
+          end
+      end
+      remports.uniq!
+      while remports.size > 0
+        port = remports.pop
+        if remvariants[port].uniq.size > 1
+          $stderr.puts "Found multiple variants for #{port}."
+          variantindex = choose_variant(port,remvariants[port])
+        else
+          variantindex = 0
+        end
+        bi = get_before_install(port)
+        dotsh.puts(bi) unless bi.nil?
+        dotsh.puts("port install #{port} #{remvariants[port][variantindex]} || exit -1")
+        ai = get_after_install(port)
+        dotsh.puts(ai) unless ai.nil?
+      end
+      stmt.close
       true
     end
+
+    def get_before_uninstall(portname)
+      get_port_action(portname,:before_uninstall)
+    end
+
+    def get_after_uninstall(portname)
+      get_port_action(portname,:after_uninstall)
+    end
+
+    def get_before_install(portname)
+      get_port_action(portname,:before_install)
+    end
+
+    def get_after_install(portname)
+      get_port_action(portname,:after_install)
+    end
+
+    private
+
+    def get_port_action(portname,type)
+      unless @config.nil?
+        if @config.has_key?(:actions)
+          if @config[:actions].has_key?(portname)
+            if @config[:actions][portname].has_key?(type)
+              @config[:actions][portname][type]
+            else
+              nil
+            end
+          end
+        end
+      end
+    end
+
   end
 
   class Portfile

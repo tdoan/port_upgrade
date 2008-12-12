@@ -265,5 +265,6 @@ if __FILE__ == $PROGRAM_NAME
   #puts pdb.outdated
   to_remove = pdb.to_remove
   $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
+  pdb.upgrade
   pdb.close
 end
