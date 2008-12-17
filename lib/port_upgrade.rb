@@ -12,6 +12,9 @@
 # ====================================================================
 #
 
+$:.unshift(File.dirname(__FILE__)) unless
+  $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
+
 require 'bz2'
 require 'find'
 require 'sqlite3'
@@ -23,6 +26,7 @@ class String
 end
 
 module Ports
+  VERSION = '0.0.1'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
 
@@ -212,7 +216,7 @@ module Ports
 
   class PortsDB
     def initialize(path=nil,outdated=nil)
-      @db = SQLite3::Database.new('port_tree.db')
+      @db = SQLite3::Database.new(':memory:')#('port_tree.db')
       @pt = PortTree.new(self,path)
       @installed = @pt.installed
       @outdated = outdated

@@ -35,8 +35,14 @@ module PortUpgrade
 
       path = options[:path]
 
-      # do stuff
-      puts "To update this executable, look in lib/port_upgrade/cli.rb"      
+      path = nil
+      path = ARGV[0] unless ARGV.size < 1
+      pdb = Ports::PortsDB.new(path)
+      #puts pdb.outdated
+      to_remove = pdb.to_remove
+      $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
+      pdb.upgrade
+      pdb.close
     end
   end
 end

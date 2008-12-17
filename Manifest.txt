@@ -1,7 +1,8 @@
 History.txt
 Manifest.txt
 PostInstall.txt
-README.rdoc
+README.txt
 Rakefile
-lib/ports_helpers.rb
-
+lib/port_upgrade.rb
+lib/port_upgrade/cli.rb
+bin/port_upgrade
