@@ -272,6 +272,10 @@ module Ports
       diff
     end
     
+    def set_outdated(out)
+      @outdated = out
+    end
+
     def outdated(reload = false)
       return @outdated unless @outdated.nil? or reload == true
       @outdated = []
@@ -298,12 +302,12 @@ module Ports
       @outdated.uniq
     end
 
-    def upgrade
+    def upgrade(path='port_upgrade.sh')
       @pt.setup_remports(outdated) if @to_remove.nil?
       remports = []
       remvariants = Hash.new {|h,k| h[k] = Array.new}
       stmt = @db.prepare("select count(*) from remports")
-      dotsh = File.new('port_upgrade.sh','w')
+      dotsh = File.new(path,'w')
       dotsh.chmod(0700)
       $stderr.puts "port_upgrade.sh open for write" if $DEBUG
       dotsh.puts("#!/bin/sh")
@@ -374,6 +378,23 @@ module Ports
           end
         end
       end
+    end
+
+    def choose_variant(portname,variants)
+      answer=false
+      while(!answer)
+        $stderr.puts "Please choose from list:"
+        variants.each_with_index{|v,i| $stderr.puts "#{i}: #{v=="" ? "(none)" : v}"}
+        $stderr.print "> "
+        reply = $stdin.gets
+        clean = (reply.strip =~ /-?[0-9]+/)
+        if (clean == 0)
+          answer = true
+        else
+          $stderr.puts "ERROR, try again."
+        end
+      end
+      return reply.to_i
     end
 
   end
