@@ -17,7 +17,6 @@ module PortUpgrade extend OptiFlagSet
   
   class CLI
     def self.execute(stdout, arguments=[])
-      puts PortUpgrade.flags.receipts
       pdb = Ports::PortsDB.new(PortUpgrade.flags.receipts)
       pdb.set_outdated(PortUpgrade.flags.outdated.split(" ")) if PortUpgrade.flags.outdated
       $stderr.puts("Outdated: #{pdb.outdated.join(' ')}")

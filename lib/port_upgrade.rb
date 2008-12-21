@@ -29,7 +29,7 @@ module Ports
   VERSION = '0.0.1'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
-
+  CONFIG_FILE = 'port_upgrade_conf.yml'
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
     def <=>(other)
@@ -221,11 +221,26 @@ module Ports
       @installed = @pt.installed
       @outdated = outdated
       @to_remove = nil
+      config_file = locate_config_file
       begin
-        @config = YAML::load(File.open('port_upgrade_conf.yml'))
+        @config = YAML::load(File.open(config_file))
+        @config = {} if @config == false
       rescue Errno::ENOENT
         $stderr.puts("No configuration loaded.")
       end
+    end
+    
+    def locate_config_file
+      to_search = []
+      local_dir = File.dirname($0).sub(/bin$/,"")
+      local_dir = local_dir == "" ? "." : local_dir
+      to_search << File.join(local_dir,"etc",Ports::CONFIG_FILE)
+      to_search << File.join(ENV['HOME'],"."+Ports::CONFIG_FILE)
+      to_search.each do |path|
+        $stderr.puts "PATH: #{path}"
+        return path if File.readable?(path)
+      end
+      return nil
     end
 
     def installed
