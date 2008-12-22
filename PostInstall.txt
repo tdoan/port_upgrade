@@ -1,0 +1,5 @@
+Port upgrade will recursively uninstall and reinstall your ports tree to get it fresh and clean and up to date. This gem installs a command "port_upgrade" which requires one option "-output". Portupgrade generates a shell script to do the actual work. To use port_upgrade do the following:
+
+sudo port selfupdate (or sync)
+port_upgrade -output upgrade.sh
+sudo ./upgrade.sh # Watch it fly
