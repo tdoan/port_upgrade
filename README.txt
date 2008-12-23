@@ -28,7 +28,7 @@ Updates your MacPorts while also removing old dependent versions of libraries an
 == REQUIREMENTS:
 
 * ruby-sqlite3 gem
-* libbz2 gem
+* bz2 gem
 * optiflag gem
 
 == INSTALL:

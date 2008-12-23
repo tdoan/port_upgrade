@@ -26,7 +26,7 @@ class String
 end
 
 module Ports
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
   CONFIG_FILE = 'port_upgrade_conf.yml'
@@ -222,10 +222,14 @@ module Ports
       @outdated = outdated
       @to_remove = nil
       config_file = locate_config_file
-      begin
-        @config = YAML::load(File.open(config_file))
-        @config = {} if @config == false
-      rescue Errno::ENOENT
+      unless config_file.nil?
+        begin
+          @config = YAML::load(File.open(config_file))
+          @config = {} if @config == false
+        rescue Errno::ENOENT
+          $stderr.puts("No configuration loaded.")
+        end
+      else
         $stderr.puts("No configuration loaded.")
       end
     end
