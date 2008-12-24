@@ -6,3 +6,4 @@ Rakefile
 lib/port_upgrade.rb
 lib/port_upgrade/cli.rb
 bin/port_upgrade
+etc/port_upgrade.conf.sample

@@ -26,10 +26,10 @@ class String
 end
 
 module Ports
-  VERSION = '0.0.2'
+  VERSION = '0.0.3'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
-  CONFIG_FILE = 'port_upgrade_conf.yml'
+  CONFIG_FILE = 'port_upgrade.conf'
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
     def <=>(other)
