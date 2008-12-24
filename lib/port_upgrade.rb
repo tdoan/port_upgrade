@@ -312,10 +312,25 @@ module Ports
             end
           end
           portfile_path = File.join(MACPORTS_DB,cats.flatten,port,'Portfile')
-          e = File.exist?(portfile_path)
-          curver = Portfile.new(portfile_path).version
-          #puts "%-32s%s < %s" %[port,version.split('+').first,curver] if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
-          @outdated << port if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+          unless File.exist?(portfile_path)
+            $stderr.puts "Searching for #{port}'s Portfile"
+            Dir.entries(MACPORTS_DB).each do |d|
+              if File.directory?(File.join(MACPORTS_DB,d)) && d != '.' && d != '..'
+                testpath = File.join(MACPORTS_DB,d,port,'Portfile')
+                if File.exist?(testpath)
+                   portfile_path = testpath
+                   break
+                 end
+              end
+            end
+          end
+          if File.exist?(portfile_path)
+            curver = Portfile.new(portfile_path).version
+            #puts "%-32s%s < %s" %[port,version.split('+').first,curver] if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+            @outdated << port if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+          else
+            $stderr.puts "Unable to process Portfile (File Not Found) for #{port}"
+          end
         end
       end
       @outdated.uniq
