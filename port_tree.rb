@@ -16,7 +16,7 @@
 require 'bz2'
 require 'find'
 require 'erb'
-require File.dirname(__FILE__) + "/lib/ports_helpers.rb"
+require File.dirname(__FILE__) + "/lib/port_upgrade.rb"
 require 'sqlite3'
 
 class PortTree
@@ -42,7 +42,7 @@ class PortTree
 end
 
 if __FILE__ == $PROGRAM_NAME
-  Ports::Utilities.traverse_receipts(ARGV[0])
+  pdb = Ports::PortsDB.new(ARGV[0])
   db = SQLite3::Database.new('port_tree.db')
   deps = nil
   db.query("select port,dep from deps") do |r|
