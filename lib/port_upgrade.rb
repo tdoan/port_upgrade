@@ -241,7 +241,6 @@ module Ports
       to_search << File.join(local_dir,"etc",Ports::CONFIG_FILE)
       to_search << File.join(ENV['HOME'],"."+Ports::CONFIG_FILE)
       to_search.each do |path|
-        $stderr.puts "PATH: #{path}"
         return path if File.readable?(path)
       end
       return nil
