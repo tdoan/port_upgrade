@@ -1,13 +1,21 @@
 %w[rubygems rake rake/clean fileutils newgem rubigen].each { |f| require f }
 require File.dirname(__FILE__) + '/lib/port_upgrade.rb'
+GEM_HOME = File.join(RbConfig::CONFIG["libdir"],RbConfig::CONFIG["RUBY_INSTALL_NAME"],"gems")
+GEM_DIR = File.join(GEM_HOME,RbConfig::CONFIG["ruby_version"],"gems")
 
-# Generate all the Rake tasks
-# Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.new('port_upgrade',Ports::VERSION) do |p|
   p.developer('Tony Doan', 'tdoan@tdoan.com')
   p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
-  p.post_install_message = File.read('PostInstall.txt') # TODO remove if post-install message not required
-  p.rubyforge_name       = "portupgrade" # TODO this is default value
+  p.post_install_message = %Q{
+
+A sample config file can be found in:
+#{GEM_DIR}/port_upgrade-#{Ports::VERSION}/etc
+To install copy it to ~/.port_upgrade.conf
+
+
+}
+
+  p.rubyforge_name       = "portupgrade"
   p.summary = "Summary"
   p.extra_deps         = [
     ['sqlite3-ruby','>= 1.2.0'],
@@ -26,6 +34,3 @@ end
 
 require 'newgem/tasks' # load /tasks/*.rake
 Dir['tasks/**/*.rake'].each { |t| load t }
-
-# TODO - want other tests/tasks run by default? Add them to the list
-# task :default => [:spec, :features]
