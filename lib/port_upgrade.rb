@@ -180,7 +180,7 @@ module Ports
           if l =~ /depends_run (\{([^}]*)\}|([^ ]*))/
             deps = $2||$3
             deps.split(" ").each do |d|
-              original_depname = d.split(":")[1]
+              original_depname = d.split(":").last
               depname = d.split(":")[1].gsub(/(-|\.|\/)/,'_')
               begin
                 @pdb.db.execute("insert into deps values(?,?)",original_portname,original_depname)
