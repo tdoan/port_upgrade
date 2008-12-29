@@ -19,7 +19,7 @@ module PortUpgrade extend OptiFlagSet
     def self.execute(stdout, arguments=[])
       pdb = Ports::PortsDB.new(PortUpgrade.flags.receipts)
       pdb.set_outdated(PortUpgrade.flags.outdated.split(" ")) if PortUpgrade.flags.outdated
-      $stderr.puts("Outdated: #{pdb.outdated.join(' ')}")
+      $stderr.puts("Outdated(#{pdb.outdated.size}): #{pdb.outdated.join(' ')}")
       to_remove = pdb.to_remove
       $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
       pdb.upgrade(PortUpgrade.flags.output)
