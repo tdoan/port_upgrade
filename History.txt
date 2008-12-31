@@ -1,3 +1,10 @@
+== 0.0.3 2008-12-23
+
+* Bug Fix Release:
+  * Include sample port_upgrade.conf
+  * BUG #23330- Fix issue with ports categorized in one place but have their Portfile in another
+  * BUG #23362 - Fix receipt parsing issue with binary runtime dependencies 
+  * Outdated output now includes a count
 == 0.0.2 2008-12-23
 
 * Second rubyforge release:
