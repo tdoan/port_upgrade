@@ -369,7 +369,7 @@ module Ports
         end
         bi = get_before_install(port)
         dotsh.puts(bi) unless bi.nil?
-        dotsh.puts("port install #{port} #{remvariants[port][variantindex]} || exit -1")
+        dotsh.puts("port #{get_force(port)} install #{port} #{remvariants[port][variantindex]} || exit -1")
         ai = get_after_install(port)
         dotsh.puts(ai) unless ai.nil?
       end
@@ -377,6 +377,15 @@ module Ports
       true
     end
 
+    def get_force(portname)
+      force = get_port_action(portname,:force_install)
+      if force
+        return "-f"
+      else
+        return ""
+      end
+    end
+    
     def get_before_uninstall(portname)
       get_port_action(portname,:before_uninstall)
     end
