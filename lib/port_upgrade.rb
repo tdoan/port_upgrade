@@ -137,12 +137,12 @@ module Ports
       @pdb.db.execute("create table ports(port text,version text, variant text)")
       @pdb.db.execute("create table deps(port text, dep text)")
       @pdb.db.execute("create unique index uniqdep on deps(port,dep)")
-
+      receipt_size = receipt_path.split("/").size
       Find.find(receipt_path) do |filename|
         next unless filename =~ /.bz2$/
         next unless File.stat(filename).file?
         pieces = filename.split("/")
-        next unless pieces.size == 9
+        next unless (pieces.size - receipt_size) == 3
         original_portname = pieces[-3]
         md = /([^+]+)((\+\w+)*)/.match(pieces[-2]) #seperate version from variants
         version = md[1]
