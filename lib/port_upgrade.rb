@@ -54,21 +54,9 @@ module Ports
     end
 
     def self.cmp_vers(versa,versb)
-      sa = versa.tr("._-","")
-      sb = versb.tr("._-","")
-      a=sa.to_i
-      b=sb.to_i
-      #a==0 ? asize=0 : asize = Math.log10(a).to_i
-      asize=sa.length
-      #b==0 ? bsize=0 : bsize = Math.log10(b).to_i
-      bsize=sb.length
-      diff = asize-bsize
-      if diff < 0
-        a = a * (10 ** diff.abs)
-      elsif diff > 0
-        b = b * (10 ** diff.abs)
-      end
-      a <=> b
+      va = Version.new(versa)
+      vb = Version.new(versb)
+      return va <=> vb
     end
   end
 
@@ -326,7 +314,15 @@ module Ports
           if File.exist?(portfile_path)
             curver = Portfile.new(portfile_path).version
             #puts "%-32s%s < %s" %[port,version.split('+').first,curver] if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
-            @outdated << port if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
+            $stderr.puts("#{port}: #{version.split('+').first}, #{curver}") if $verbose
+            cmp = Ports::Utilities.cmp_vers(version.split('+').first,curver)
+            if cmp.nil?
+              $stderr.puts "Unable to compare versions: #{[port]}"
+            else
+               if cmp < 0
+                 @outdated << port
+               end
+             end
           else
             $stderr.puts "Unable to process Portfile (File Not Found) for #{port}"
           end
