@@ -1,3 +1,8 @@
+== 0.4.0 2009-01-02
+* Add flag to call port outdated instead of using internal routine
+* Complete rewrite of version comparison routine
+* Bugs
+  * Fix computing depth of receipts when using a custom path
 == 0.0.3 2008-12-23
 
 * Bug Fix Release:
