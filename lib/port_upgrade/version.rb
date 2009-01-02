@@ -56,6 +56,7 @@ module Ports
     end
 
     def breakup_version(v)
+      raise "Bad input to version; not String" unless v.is_a?(String)
       if v =~ /\[[^\]]+\]/
         $stderr.puts "code version: #{v}"
         result = ["0"]
