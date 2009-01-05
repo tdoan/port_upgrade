@@ -118,7 +118,7 @@ module Ports
         rescue SQLite3::SQLException => exp
           $stderr.puts "Dup insert into remports:  #{exp}}" if $DEBUG
         end
-        @pdb.db.execute("insert into remports values(\"#{a}\",\"\")")
+        @pdb.db.execute("insert or ignore into remports values(\"#{a}\",\"\")")
       end
       @pdb.db.execute('delete from remports where port="gimp-app" and dep="gimp"')
       #File.open("remtree.dot",'w') do |f|
