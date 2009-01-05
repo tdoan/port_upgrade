@@ -6,6 +6,7 @@ GEM_DIR = File.join(GEM_HOME,RbConfig::CONFIG["ruby_version"],"gems")
 $hoe = Hoe.new('port_upgrade',Ports::VERSION) do |p|
   p.developer('Tony Doan', 'tdoan@tdoan.com')
   p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
+  p.summary = "Cleanly upgrade your MacPorts."
   p.post_install_message = %Q{
 
 A sample config file can be found in:
