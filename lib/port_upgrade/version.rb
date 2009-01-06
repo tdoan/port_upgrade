@@ -24,7 +24,12 @@ module Ports
           a = r =~ /^-?[0-9]+$/ ? r.to_i : r
           b = s =~ /^-?[0-9]+$/ ? s.to_i : s
           $stderr.puts "#{a.inspect} <=> #{b.inspect}" if $DEBUG
-          cmp = a <=> b
+          if a.instance_of?(b.class)
+            cmp = a <=> b
+          else
+            $stderr.puts "Can't compare different classes #{a.class.to_s} <=> #{b.class.to_s}" if $DEBUG
+            cmp = 0
+          end
           return cmp if cmp != 0
         end
         return cmp if cmp != 0
