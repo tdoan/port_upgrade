@@ -7,19 +7,27 @@ module Ports
     end
 
     def <=>(other)
+      $stderr.puts("self: #{@parts.inspect}") if $DEBUG
+      $stderr.puts("other: #{other.parts.inspect}") if $DEBUG
       cmp = 0
-      @parts.each_with_index do |p,i|
-        #$stderr.puts "Sizes: #{p.size} #{other.parts[i].size}"
-        p.each_with_index do |q,j|
-          a = q
-          b = other.parts[i][j]
-          a = a.to_i if a =~ /^[0-9]+$/
-          b = b.to_i if b =~ /^[0-9]+$/
-          #$stderr.puts "#{a} <=> #{b}"
+      numparts = @parts.size>other.parts.size ? @parts.size : other.parts.size
+      0.upto(numparts-1) do |i|
+        p = i>=@parts.size ? ["-1"] : @parts[i]
+        q = i>=other.parts.size ? ["-1"] : other.parts[i]
+        numsubparts = p.size>q.size ? p.size : q.size
+        0.upto(numsubparts-1) do |j|
+          r = j>=p.size ? ["-1"] : p[j]
+          s = j>=q.size ? ["-1"] : q[j]
+
+          $stderr.puts("p of #{j}: #{r}") if $DEBUG
+          $stderr.puts("q of #{j}: #{s}") if $DEBUG
+          a = r =~ /^-?[0-9]+$/ ? r.to_i : r
+          b = s =~ /^-?[0-9]+$/ ? s.to_i : s
+          $stderr.puts "#{a} <=> #{b}" if $DEBUG
           cmp = a <=> b
-          break if cmp != 0
+          return cmp if cmp != 0
         end
-        break if cmp != 0
+        return cmp if cmp != 0
       end
       cmp
     end
