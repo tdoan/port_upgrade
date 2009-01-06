@@ -23,7 +23,7 @@ module Ports
           $stderr.puts("q of #{j}: #{s}") if $DEBUG
           a = r =~ /^-?[0-9]+$/ ? r.to_i : r
           b = s =~ /^-?[0-9]+$/ ? s.to_i : s
-          $stderr.puts "#{a} <=> #{b}" if $DEBUG
+          $stderr.puts "#{a.inspect} <=> #{b.inspect}" if $DEBUG
           cmp = a <=> b
           return cmp if cmp != 0
         end
