@@ -3,6 +3,7 @@
 #  Created on 2008-12-15.
 #  Copyright (c) 2008. All rights reserved.
 
+require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + "/../lib/port_upgrade")
 
 require "port_upgrade/cli"
