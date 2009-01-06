@@ -333,6 +333,7 @@ module Ports
     end
 
     def upgrade(path='port_upgrade.sh')
+      final = []
       @pt.setup_remports(outdated) if @to_remove.nil?
       remports = []
       remvariants = Hash.new {|h,k| h[k] = Array.new}
@@ -372,9 +373,13 @@ module Ports
         dotsh.puts(bi) unless bi.nil?
         dotsh.puts("port #{get_force(port)} -x install #{port} #{remvariants[port][variantindex]} || exit -1")
         ai = get_after_install(port)
+        fi = get_final_install(port)
+        final << fi unless fi.nil?
         dotsh.puts(ai) unless ai.nil?
       end
       stmt.close
+      final.each{|l| dotsh.puts(l)}
+      dotsh.close
       true
     end
 
@@ -401,6 +406,10 @@ module Ports
 
     def get_after_install(portname)
       get_port_action(portname,:after_install)
+    end
+
+    def get_final_install(portname)
+      get_port_action(portname,:final_install)
     end
 
     private
