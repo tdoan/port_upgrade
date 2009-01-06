@@ -16,8 +16,8 @@ module Ports
         q = i>=other.parts.size ? ["-1"] : other.parts[i]
         numsubparts = p.size>q.size ? p.size : q.size
         0.upto(numsubparts-1) do |j|
-          r = j>=p.size ? ["-1"] : p[j]
-          s = j>=q.size ? ["-1"] : q[j]
+          r = j>=p.size ? "-1" : p[j]
+          s = j>=q.size ? "-1" : q[j]
 
           $stderr.puts("p of #{j}: #{r}") if $DEBUG
           $stderr.puts("q of #{j}: #{s}") if $DEBUG
