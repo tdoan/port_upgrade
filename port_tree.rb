@@ -12,7 +12,7 @@
 # newer version instead, at your option.
 # ====================================================================
 #
-
+require 'rubygems'
 require 'bz2'
 require 'find'
 require 'erb'
