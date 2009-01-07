@@ -1,8 +1,18 @@
-== 0.4.0 2009-01-02
+== 0.0.5 2009-01-06
+* Bugs
+  * port install needs -x to actually give useful return codes
+  * Fixed issue with database inserts when there are more than one version of something to uninstall
+  * Added summary to Rakefile so it will show up on gem search
+* Yet another rewrite of version compare routine. Handles version string that differ in length now
+* Better debugging output
+* Added new config file action final_install. For items that need to happen after a port is installed, but is best at the very end of all the installs.
+
+== 0.0.4 2009-01-02
 * Add flag to call port outdated instead of using internal routine
 * Complete rewrite of version comparison routine
 * Bugs
   * Fix computing depth of receipts when using a custom path
+
 == 0.0.3 2008-12-23
 
 * Bug Fix Release:

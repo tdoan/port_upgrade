@@ -27,7 +27,7 @@ class String
 end
 
 module Ports
-  VERSION = '0.0.4'
+  VERSION = '0.0.5'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
   CONFIG_FILE = 'port_upgrade.conf'
