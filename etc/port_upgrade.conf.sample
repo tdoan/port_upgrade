@@ -5,7 +5,11 @@
   ncursesw:
     :after_uninstall: rm -rf /opt/local/share/terminfo
   ImageMagick:
-    :before_uninstall: gem uninstall rmagick
+    :before_uninstall: gem uninstall -I rmagick
     :after_install: gem install rmagick
+    :force_install: true
   python25:
-    :after_install: python_select python25
+    :final_install: python_select python25
+  sqlite3:
+    :before_uninstall: gem uninstall -I sqlite3-ruby
+    :after_install: gem install sqlite3-ruby
