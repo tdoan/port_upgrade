@@ -17,7 +17,6 @@ To install copy it to ~/.port_upgrade.conf
 }
 
   p.rubyforge_name       = "portupgrade"
-  p.summary = "Summary"
   p.extra_deps         = [
     ['sqlite3-ruby','>= 1.2.0'],
     ['bz2','>= 0.2'],
