@@ -52,7 +52,7 @@ module Ports
       #puts "State: #{state}"
       parts = []
       part = ""
-      s.each_char do |c|
+      s.each_byte do |c|
         newstate = get_state(c)
         case newstate
         when state
