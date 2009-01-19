@@ -7,15 +7,6 @@ $hoe = Hoe.new('port_upgrade',Ports::VERSION) do |p|
   p.developer('Tony Doan', 'tdoan@tdoan.com')
   p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
   p.summary = "Cleanly upgrade your MacPorts."
-  p.post_install_message = %Q{
-
-A sample config file can be found in:
-#{GEM_DIR}/port_upgrade-#{Ports::VERSION}/etc
-To install copy it to ~/.port_upgrade.conf
-
-
-}
-
   p.rubyforge_name       = "portupgrade"
   p.extra_deps         = [
     ['sqlite3-ruby','>= 1.2.0'],

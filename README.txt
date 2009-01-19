@@ -16,7 +16,8 @@ A clean way to keep your MacPorts up to date.
 Updates your MacPorts while also removing old dependent versions of libraries and applications.
 
 == SYNOPSIS:
-
+  0) Install a port_upgrade config file into ~/.port_upgrade.conf, 
+     a sample is included with the gem (optional)
   1) Update your ports database from macports.org
   sudo port selfupdate (or sync)
   2) Run port_upgrade to generate a shell script
