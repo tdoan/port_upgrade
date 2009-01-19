@@ -19,6 +19,7 @@ require 'yaml'
 require 'bz2'
 require 'find'
 require 'sqlite3'
+require 'erb'
 
 class String
   def dot_clean
@@ -31,6 +32,7 @@ module Ports
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
   CONFIG_FILE = 'port_upgrade.conf'
+  SH_ERB_PATH = File.join(File.dirname(__FILE__),"port_upgrade","port_upgrade_sh.erb")
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
     def <=>(other)
@@ -334,6 +336,8 @@ module Ports
 
     def upgrade(path='port_upgrade.sh')
       final = []
+      uninstall_data = []
+      install_data = []
       @pt.setup_remports(outdated) if @to_remove.nil?
       remports = []
       remvariants = Hash.new {|h,k| h[k] = Array.new}
@@ -341,7 +345,6 @@ module Ports
       dotsh = File.new(path,'w')
       dotsh.chmod(0700)
       $stderr.puts "port_upgrade.sh open for write" if $DEBUG
-      dotsh.puts("#!/bin/sh")
       while stmt.execute.to_a.first[0].to_i > 0
           temp = get_leaves
           break if temp.size == 0
@@ -350,10 +353,10 @@ module Ports
               installed = rs.to_a
               installed.each do |port|
                 bu = get_before_uninstall(port[0])
-                dotsh.puts(bu) unless bu.nil?
-                dotsh.puts("port uninstall #{port[0]} @#{port[1]}#{port[2]} || exit -1")
+                uninstall_data << bu unless bu.nil?
+                uninstall_data << "port uninstall #{port[0]} @#{port[1]}#{port[2]} || exit -1"
                 au = get_after_uninstall(port[0])
-                dotsh.puts(au) unless au.nil?
+                uninstall_data << au unless au.nil?
                 remports.push(port[0])
                 remvariants[port[0]].push(port[2])
               end
@@ -370,15 +373,18 @@ module Ports
           variantindex = 0
         end
         bi = get_before_install(port)
-        dotsh.puts(bi) unless bi.nil?
-        dotsh.puts("port #{get_force(port)} -x install #{port} #{remvariants[port][variantindex]} || exit -1")
+        uninstall_data << bi unless bi.nil?
+        install_data << "port #{get_force(port)} -x install #{port} #{remvariants[port][variantindex]} || exit -1"
         ai = get_after_install(port)
         fi = get_final_install(port)
         final << fi unless fi.nil?
-        dotsh.puts(ai) unless ai.nil?
+        install_data << ai unless ai.nil?
       end
       stmt.close
       final.each{|l| dotsh.puts(l)}
+      final_actions = final
+      template = ERB.new(File.read(SH_ERB_PATH))
+      dotsh.puts template.result(binding)
       dotsh.close
       true
     end

@@ -1,0 +1,46 @@
+#!/bin/sh
+
+<%if uninstall_data.size == 0 and install_data.size == 0 and final_actions.size == 0 %>
+echo "Nothing to upgrade"
+<% else %>
+
+uninstall_ports() {
+<%= uninstall_data.join("\n") %>
+}
+
+install_ports() {
+<%= install_data.join("\n") %>
+}
+
+<% if final_actions.size > 0 %>
+final_actions()
+{
+<%= final_actions.join("\n") %>
+}
+<% end %>
+
+case $1 in
+  uninstall)
+    echo "uninstall"
+    uninstall_ports
+    ;;
+  install)
+    echo "install"
+    install_ports
+    ;;
+  final)
+    echo "final actions"
+  	final_actions
+    ;;
+  '')
+    echo "full run"
+    uninstall_ports
+    install_ports
+		final_actions
+    ;;
+  *)
+    echo $1: unknown option >&2
+    exit 1
+    ;;
+esac
+<% end %>
