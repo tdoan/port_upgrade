@@ -381,7 +381,6 @@ module Ports
         install_data << ai unless ai.nil?
       end
       stmt.close
-      final.each{|l| dotsh.puts(l)}
       final_actions = final
       template = ERB.new(File.read(SH_ERB_PATH))
       dotsh.puts template.result(binding)
