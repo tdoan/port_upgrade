@@ -12,12 +12,12 @@ install_ports() {
 <%= install_data.join("\n") %>
 }
 
+<% if final_actions.size > 0 %>
 final_actions()
 {
-<% if final_actions.size > 0 %>
 <%= final_actions.join("\n") %>
-<% end %>
 }
+<% end %>
 
 case $1 in
   uninstall)
@@ -36,7 +36,9 @@ case $1 in
     echo "full run"
     uninstall_ports
     install_ports
+		<%if final_actions.size == 0 %>
 		final_actions
+		<% end %>
     ;;
   *)
     echo $1: unknown option >&2
