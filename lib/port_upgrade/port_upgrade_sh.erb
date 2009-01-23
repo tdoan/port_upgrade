@@ -29,8 +29,12 @@ case $1 in
     install_ports
     ;;
   final)
+	<%if final_actions.size > 0 %>
     echo "final actions"
   	final_actions
+  <% else %>
+    echo "No final actions"
+  <% end %>
     ;;
   '')
     echo "full run"
