@@ -36,7 +36,7 @@ case $1 in
     echo "full run"
     uninstall_ports
     install_ports
-		<%if final_actions.size == 0 %>
+		<%if final_actions.size > 0 %>
 		final_actions
 		<% end %>
     ;;
