@@ -283,6 +283,7 @@ module Ports
     
     def set_outdated(out)
       @outdated = out
+      @to_remove = nil
     end
 
     def outdated(reload = false)
