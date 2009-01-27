@@ -487,7 +487,7 @@ module Ports
         when /^revision\s+([^\s]+)/
           rev = $1
           #$stderr.puts "revision found #{rev}"
-        when /(\w+\.setup\s+\{[^\}]+\}\s+([^\s]+)|^\w+\.setup\s+[^ ]+ (.*))/
+        when /(\w+\.setup\s+\{[^\}]+\}\s+([^\s]+)|^\w+\.setup\s+[^ ]+ (\S+))/
           v = $2 || $3 if v.nil?
           break
         when /(\S+)\s+([^$]+)$/
