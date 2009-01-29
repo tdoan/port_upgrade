@@ -1,40 +1,60 @@
-require 'optiflag'
+require 'optparse'
+require 'ostruct'
 
-module PortUpgrade extend OptiFlagSet
-  
-    flag "output" do
-      description "Where to output the shell script that performs the upgrade."
-    end
-
-    optional_flag "outdated" do
-      description "Specify the list of outdated ports to upgrade."
-    end
-
-    optional_flag "receipts" do
-    end
-    
-    optional_switch_flag "portoutdated" do
-      description "Call \"port outdated\" instead of using internal routine for determining out of date ports. Overides outdated flag."
-    end
-    
-    optional_switch_flag "checkoutdated" do
-      description "Compare internal outdated routing with \"port outdated \""
-    end
-    
-    optional_switch_flag "verbose" do
-    end
-
-    and_process!
+module PortUpgrade
   
   class CLI
     def self.execute(stdout, arguments=[])
-      $verbose = true if PortUpgrade.flags.verbose
-      if PortUpgrade.flags.portoutdated
+      options = OpenStruct.new
+      options.output = nil
+      options.receipts = nil
+      options.outdated = nil
+      options.portoutdated = false
+      options.checkoutdated = false
+      options.verbose = false
+      
+      opts = OptionParser.new do |opts|
+        opts.banner = "Usage: example.rb [options]"
+        opts.on("-o", "--output FILE","FILE to output shell commands") do |output|
+          options.output  = output
+        end
+        opts.on("--receipts PATH","PATH to receipts files") do |receipts|
+          options.receipts  = receipts
+        end
+        opts.on("--outdated OUTDATED","Space seperated list of ports to mark as outdated") do |outdated|
+          options.outdated  = outdated.split(" ")
+          $stderr.puts options.outdated.inspect
+        end
+        opts.on("--portoutdated",'Use `port outdated`(slow) instead of internal version checking routine(fast)') do |po|
+          options.portoutdated = po
+          $stderr.puts "PORTOUTDATED: #{po}"
+        end
+        opts.on("--checkoutdated",'Check `port outdated` against internal routine for inconsistencies') do |co|
+          options.checkoutdated = co
+          $stderr.puts "CHECKOUTDATED: #{co}"
+        end
+        opts.on_tail("-V", "--version","Show version") do
+          $stderr.puts "port_upgrade #{Ports::VERSION}"
+          exit
+        end
+        opts.on_tail("-h", "--help", "Show this message") do
+          puts opts
+          exit
+        end
+        opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+          $stderr.puts "VERBOSE: #{v}"
+          options.verbose = v
+        end
+      end
+      opts.parse!(arguments)
+      
+      $verbose = true# if options.verbose
+      if options.portoutdated
         $stderr.print "Running port outdated..."
         outdated = `port outdated`.find_all{|l| (l =~ /(The following|No installed ports are outdated)/).nil? }.collect{|l| l.split[0]}
         $stderr.puts "done"
-        if PortUpgrade.flags.checkoutdated
-          mypdb = Ports::PortsDB.new(PortUpgrade.flags.receipts)
+        if options.checkoutdated
+          mypdb = Ports::PortsDB.new(options.receipts)
           myoutdated = mypdb.outdated
           diff = outdated-myoutdated
           if diff.size > 0
@@ -43,15 +63,15 @@ module PortUpgrade extend OptiFlagSet
             $stderr.puts "No Difference"
           end
         end
-        pdb = Ports::PortsDB.new(PortUpgrade.flags.receipts,outdated)
+        pdb = Ports::PortsDB.new(options.receipts,outdated)
       else
-        pdb = Ports::PortsDB.new(PortUpgrade.flags.receipts)
-        pdb.set_outdated(PortUpgrade.flags.outdated.split(" ")) if PortUpgrade.flags.outdated
+        pdb = Ports::PortsDB.new(options.receipts)
+        pdb.set_outdated(options.outdated) if options.outdated
       end
       $stderr.puts("Outdated(#{pdb.outdated.size}): #{pdb.outdated.join(' ')}")
       to_remove = pdb.to_remove
       $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
-      pdb.upgrade(PortUpgrade.flags.output)
+      pdb.upgrade(options.output)
       pdb.close
     end
   end

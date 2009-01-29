@@ -10,8 +10,7 @@ $hoe = Hoe.new('port_upgrade',Ports::VERSION) do |p|
   p.rubyforge_name       = "portupgrade"
   p.extra_deps         = [
     ['sqlite3-ruby','>= 1.2.0'],
-    ['bz2','>= 0.2'],
-    ['optiflag','>= 0.6.0'],
+    ['bz2','>= 0.2']
   ]
   p.extra_dev_deps = [
     ['newgem', ">= #{::Newgem::VERSION}"]
