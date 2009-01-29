@@ -14,7 +14,7 @@ module PortUpgrade
       options.verbose = false
       
       opts = OptionParser.new do |opts|
-        opts.banner = "Usage: example.rb [options]"
+        opts.banner = "Usage: example.rb -oFILENAME [options]"
         opts.on("-o", "--output FILE","FILE to output shell commands") do |output|
           options.output  = output
         end
@@ -47,7 +47,10 @@ module PortUpgrade
         end
       end
       opts.parse!(arguments)
-      
+      if !options.output
+        puts opts
+        exit 1
+      end
       $verbose = true# if options.verbose
       if options.portoutdated
         $stderr.print "Running port outdated..."
