@@ -14,7 +14,7 @@ module PortUpgrade
       options.verbose = false
       
       opts = OptionParser.new do |opts|
-        opts.banner = "Usage: example.rb -oFILENAME [options]"
+        opts.banner = "Usage: port_upgrade.rb -oFILENAME [options]"
         opts.on("-o", "--output FILE","FILE to output shell commands") do |output|
           options.output  = output
         end
