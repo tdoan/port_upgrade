@@ -43,7 +43,7 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   pdb = Ports::PortsDB.new(ARGV[0])
-  db = SQLite3::Database.new('port_tree.db')
+  db = pdb.db
   deps = nil
   db.query("select port,dep from deps") do |r|
     deps = r.to_a
