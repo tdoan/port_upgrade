@@ -30,7 +30,6 @@ Updates your MacPorts while also removing old dependent versions of libraries an
 
 * ruby-sqlite3 gem
 * bz2 gem
-* optiflag gem
 
 == INSTALL:
 
