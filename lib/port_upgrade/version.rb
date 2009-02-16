@@ -7,6 +7,7 @@ module Ports
     end
 
     def <=>(other)
+      return 0 if @parts.nil? or other.parts.nil?
       $stderr.puts("self: #{@parts.inspect}") if $DEBUG
       $stderr.puts("other: #{other.parts.inspect}") if $DEBUG
       cmp = 0
@@ -69,6 +70,7 @@ module Ports
     end
 
     def breakup_version(v)
+      return nil if v.nil?
       raise "Bad input to version; not String" unless v.is_a?(String)
       if v =~ /\[[^\]]+\]/
         $stderr.puts "code version: #{v}"

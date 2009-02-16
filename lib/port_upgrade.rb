@@ -318,8 +318,8 @@ module Ports
           if File.exist?(portfile_path)
             curver = Portfile.new(portfile_path).version
             #puts "%-32s%s < %s" %[port,version.split('+').first,curver] if Ports::Utilities.cmp_vers(version.split('+').first,curver) < 0
-            $stderr.puts("#{port}: #{version.split('+').first}, #{curver}") if $DEBUG
             cmp = Ports::Utilities.cmp_vers(version.split('+').first,curver)
+            $stderr.puts("#{port}: #{version.split('+').first} <=> #{curver}       #{cmp}") if $DEBUG
             if cmp.nil?
               $stderr.puts "Unable to compare versions: #{[port]}"
             else
@@ -473,6 +473,8 @@ module Ports
         when /^set\s+(\S+)\s+(\S+)/
           vars[$1] = $2
           #$stderr.puts "Var: #{$1}  Val: #{$2}"
+        when /^version\s+\[(.*)\]/
+          v = nil
         when /^version\s+([^\s]+)/
           v = $1
           while(v =~ /(\$\{([^}]+)\})/) do
@@ -495,7 +497,7 @@ module Ports
         end
       end
       rev = "0" if rev.nil?
-      v = v +"_"+rev
+      v = v +"_"+rev unless v.nil?
       return v
     end
   end
