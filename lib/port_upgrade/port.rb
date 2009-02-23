@@ -24,7 +24,7 @@ module Ports
           end
         end
       end
-      raise "NoSuchPort" if @portfile_path.nil?
+      raise "NoSuchPort: #{@name}" if @portfile_path.nil?
     end
 
     def installed?
