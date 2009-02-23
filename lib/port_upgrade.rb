@@ -14,7 +14,8 @@
 require 'rubygems'
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
-
+require 'port_upgrade/port'
+require 'port_upgrade/version'
 require 'yaml'
 require 'bz2'
 require 'find'
@@ -61,9 +62,6 @@ module Ports
       vb = Version.new(versb)
       return va <=> vb
     end
-  end
-
-  class Port
   end
 
   class PortTree
