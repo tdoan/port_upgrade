@@ -208,7 +208,7 @@ module Ports
       @db = SQLite3::Database.new(':memory:')#('port_tree.db')
       @pt = PortTree.new(self,path)
       @installed = @pt.installed
-      @outdated = outdated
+      set_outdated(outdated)
       @to_remove = nil
       config_file = locate_config_file
       unless config_file.nil?
@@ -280,6 +280,12 @@ module Ports
     end
     
     def set_outdated(out)
+      begin
+        out.each{|o| Port.new(o)} unless out.nil?
+      rescue RuntimeError => ex
+        $stderr.puts ex
+        exit(-1)
+      end
       @outdated = out
       @to_remove = nil
     end
