@@ -455,6 +455,7 @@ module Ports
 
   class Portfile
     def initialize(path)
+      raise Errno::ENOENT if (File.file?(path) == false or File.readable?(path) == false)
       @path = path
     end
 

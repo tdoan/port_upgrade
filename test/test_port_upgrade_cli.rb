@@ -1,4 +1,4 @@
-#require File.join(File.dirname(__FILE__), "test_helper.rb")
+require File.join(File.dirname(__FILE__), "test_helper.rb")
 require 'test/unit'
 require 'port_upgrade/cli'
 require 'stringio'

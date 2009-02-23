@@ -1,3 +1,4 @@
+require File.join(File.dirname(__FILE__), "test_helper.rb")
 require File.join(File.dirname(__FILE__), '..', 'lib','port_upgrade','version')
 require 'test/unit'
 include Ports
