@@ -23,7 +23,6 @@ module PortUpgrade
         end
         opts.on("--outdated OUTDATED","Space seperated list of ports to mark as outdated") do |outdated|
           options.outdated  = outdated.split(" ")
-          $stderr.puts options.outdated.inspect
         end
         opts.on("--portoutdated",'Use `port outdated`(slow) instead of internal version checking routine(fast)') do |po|
           options.portoutdated = po
