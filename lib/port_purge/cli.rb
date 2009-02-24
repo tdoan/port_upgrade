@@ -1,10 +1,12 @@
 require 'optparse'
 require 'ostruct'
+require 'yaml'
 
 include Ports
 
 module PortPurge
   class CLI
+    DOTFILEPATH = File.join(ENV['HOME'],".port_upgrade_ports")
     def self.execute(stdout, arguments=[])
       options = OpenStruct.new
       options.filter = nil
@@ -17,6 +19,8 @@ module PortPurge
       opts.parse!
       
       @to_remove = []
+      @keep = []
+      @keep = YAML::load(File.read(DOTFILEPATH)) if File.readable?(DOTFILEPATH)
       @pdb = PortsDB.new
       ports = @pdb.db.query('select port from ports').collect{|p| p[0]}
       deps = @pdb.db.query('select dep from deps').collect{|p| p[0]}
@@ -24,6 +28,7 @@ module PortPurge
       diff = (ports-deps).sort
       $stderr.puts "Applying filter /#{options.filter}/" unless options.filter.nil?
       diff.each do |leaf|
+        next if @keep.include? leaf
         unless options.filter.nil?
           next unless Regexp.compile(options.filter).match(leaf)
         end
@@ -39,7 +44,12 @@ module PortPurge
         when /^(skip|s)$/i
           break
           $stderr.puts
+        else
+          @keep << leaf
         end
+      end
+      File.open(DOTFILEPATH,'w') do |f|
+        f.write(@keep.to_yaml)
       end
       exit 0 unless @to_remove.size > 0
       $stderr.print "Really remove #{@to_remove.join(" ")} ? (type yes) "
