@@ -217,6 +217,9 @@ module Ports
           @config = {} if @config == false
         rescue Errno::ENOENT
           $stderr.puts("No configuration loaded.")
+        rescue ArgumentError
+          $stderr.puts("Badly formed config file.")
+          exit(-1)
         end
       else
         $stderr.puts("No configuration loaded.")
@@ -428,8 +431,8 @@ module Ports
       unless @config.nil?
         if @config.has_key?(:actions)
           if @config[:actions].has_key?(portname)
-            if @config[:actions][portname].has_key?(type)
-              @config[:actions][portname][type]
+            if @config[:actions][portname].is_a?(Hash) and @config[:actions][portname].has_key?(type)
+              @config[:actions][portname][type].to_s
             else
               nil
             end
