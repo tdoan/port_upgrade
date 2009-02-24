@@ -20,7 +20,11 @@ module PortPurge
       
       @to_remove = []
       @keep = []
-      @keep = YAML::load(File.read(DOTFILEPATH)) if File.readable?(DOTFILEPATH)
+      begin
+        @keep = YAML::load(File.read(DOTFILEPATH)) if File.readable?(DOTFILEPATH)
+      rescue ArgumentError
+        $stderr.puts("Badly formed .port_upgrade_ports file. Skipping.")
+      end
       @pdb = PortsDB.new
       ports = @pdb.db.query('select port from ports').collect{|p| p[0]}
       deps = @pdb.db.query('select dep from deps').collect{|p| p[0]}
