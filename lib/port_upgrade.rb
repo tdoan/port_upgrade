@@ -366,7 +366,7 @@ module Ports
                 au = get_after_uninstall(port[0])
                 uninstall_data << au unless au.nil?
                 remports.push(port[0])
-                remvariants[port[0]].push(port[2])
+                remvariants[port[0]].push(port[2]) if remvariants[port[0]] and remvariants[port[0]].index(port[2]).nil?
               end
             end
           end
@@ -445,7 +445,7 @@ module Ports
       answer=false
       while(!answer)
         $stderr.puts "Please choose from list:"
-        variants.each_with_index{|v,i| $stderr.puts "#{i}: #{v=="" ? "(none)" : v}"}
+        variants.sort.each_with_index{|v,i| $stderr.puts "#{i}: #{v=="" ? "(none)" : v}"}
         $stderr.print "> "
         reply = $stdin.gets
         clean = (reply.strip =~ /-?[0-9]+/)
