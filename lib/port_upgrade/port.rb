@@ -11,7 +11,9 @@ module Ports
         Find.find(@rp) do |d|
           next unless File.directory?(d)
           next if d == @rp
-          @versions << File.basename(d)
+          b = File.basename(d)
+          md = /([^+]+)((\+\w+)*)/.match(b)
+          @versions << md[1] unless md.nil?
         end
       end
 
