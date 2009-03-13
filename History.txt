@@ -1,3 +1,21 @@
+== 0.1.0 2009-03-12
+* Removed use of optiflag gem. Using built-in optparse instead. The output flag has changed to -o from -ouput.
+* New script output allowing for individual phases to be run. Default is still to run everything.
+* Added experiment port_purge tool. USE WITH CAUTION. Does port removes directly so must be run as root.
+* New Port class added to better encapsulate functionality specfic to a port. Not used yet by main line of code.
+* More tests, more to come.
+* Bugs
+  * Removed post install message which had hard coded path (despite best efforts to make it dynamic)
+  * Fixes for sameple config file.
+  * Moved class Port into it's own file.
+  * Catch errors when reading malformed config files.
+  * When prompting about conflicting variants remove dups.
+  * Fixes Ruby 1.8.6 compatibility in <=> routine of Version class.
+  * port_tree.rb uses PortsDB class instead of the SQLite3 database directly
+  * Clear cached to_remove when outdated changes.
+  * Better regex for parsing exceptionally weird version strings in Portfiles.
+  * Return 0 for version strings that contain TCL code, for now.
+  
 == 0.0.5 2009-01-06
 * Bugs
   * port install needs -x to actually give useful return codes
