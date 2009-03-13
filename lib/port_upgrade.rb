@@ -205,6 +205,7 @@ module Ports
 
   class PortsDB
     def initialize(path=nil,outdated=nil)
+      @path=path
       @db = SQLite3::Database.new(':memory:')#('port_tree.db')
       @pt = PortTree.new(self,path)
       @installed = @pt.installed
@@ -425,6 +426,10 @@ module Ports
       get_port_action(portname,:final_install)
     end
 
+    def [](portname)
+      Port.new(portname,@path)
+    end
+    
     private
 
     def get_port_action(portname,type)
