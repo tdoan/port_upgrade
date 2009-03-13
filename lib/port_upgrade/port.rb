@@ -2,8 +2,9 @@ module Ports
   class Port
     attr_reader :name,:versions,:portfile_path
 
-    def initialize(portname)
-      tmpp = File.join(RECEIPT_PATH,portname)
+    def initialize(portname,receipt_path=nil)
+      receipt_path ||= RECEIPT_PATH
+      tmpp = File.join(receipt_path,portname)
       @name = portname
       @versions = []
       if File.exist?(tmpp) and File.readable?(tmpp)
