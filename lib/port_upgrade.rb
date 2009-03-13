@@ -121,7 +121,7 @@ module Ports
         end
         @pdb.db.execute("insert or ignore into remports values(\"#{a}\",\"\")")
       end
-      @pdb.db.execute('delete from remports where port="gimp-app" and dep="gimp"')
+      #@pdb.db.execute('delete from remports where port="gimp-app" and dep="gimp"')
       #File.open("remtree.dot",'w') do |f|
       #  pt = table_to_tree('remports','remports','port','port','dep')
       #  f.write(pt.to_dot)
