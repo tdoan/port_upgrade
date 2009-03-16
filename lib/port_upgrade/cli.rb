@@ -70,7 +70,8 @@ module PortUpgrade
         pdb = Ports::PortsDB.new(options.receipts)
         pdb.set_outdated(options.outdated) if options.outdated
       end
-      $stderr.puts("Outdated(#{pdb.outdated.size}): #{pdb.outdated.join(' ')}")
+      $stderr.puts("Outdated(#{pdb.outdated.size}):")
+      $stderr.puts "#{pdb.outdated.uniq.collect {|portname| p=pdb[portname] ;"#{portname}(#{p.versions.join(", ")}) < #{p.portfile.version}"}.join("\n")}"
       to_remove = pdb.to_remove
       $stderr.puts "#{to_remove.size} ports to remove: #{to_remove.join(',')}"
       pdb.upgrade(options.output)
