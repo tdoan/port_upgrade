@@ -2,8 +2,6 @@ require 'optparse'
 require 'ostruct'
 require 'yaml'
 
-include Ports
-
 module PortPurge
   class CLI
     DOTFILEPATH = File.join(ENV['HOME'],".port_upgrade_ports")
@@ -25,7 +23,7 @@ module PortPurge
       rescue ArgumentError
         $stderr.puts("Badly formed .port_upgrade_ports file. Skipping.")
       end
-      @pdb = PortsDB.new
+      @pdb = Ports::PortsDB.new
       ports = @pdb.db.query('select port from ports').collect{|p| p[0]}
       deps = @pdb.db.query('select dep from deps').collect{|p| p[0]}
       $stderr.puts "Leaves:"
