@@ -75,6 +75,12 @@ class TestVersion < Test::Unit::TestCase
     end
   end
   
+  def test_6
+    v1 = Version.new("1.8.7-p72_3")
+    v2 = Version.new("1.8.7-p160_1")
+    assert_equal(v1 <=> v2, -1)
+  end
+  
   def test_other_class
     assert_raise RuntimeError do
       v = Version.new(["2"])
