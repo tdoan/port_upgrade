@@ -18,7 +18,7 @@ module Ports
         #numsubparts = p.size>q.size ? p.size : q.size
         a = p =~ /^-?[0-9]+$/ ? p.to_i : p
         b = q =~ /^-?[0-9]+$/ ? q.to_i : q
-        $stderr.puts "#{a.inspect} <=> #{b.inspect}" #if $DEBUG
+        $stderr.puts "#{a.inspect} <=> #{b.inspect}" if $DEBUG
         if a.instance_of?(b.class)
           cmp = a <=> b
         else
