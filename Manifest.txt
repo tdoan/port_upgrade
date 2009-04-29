@@ -1,6 +1,6 @@
 History.txt
 Manifest.txt
-README.txt
+README.rdoc
 Rakefile
 lib/port_purge/cli.rb
 lib/port_upgrade.rb
