@@ -1,11 +1,12 @@
 port_upgrade
 2008-07-14
 
-Copyright (C) 2008 Tony Doan (tdoan@tdoan.com)
+Copyright (C) 2009 Tony Doan (tdoan@tdoan.com)
 
 = port_upgrade
 
-* http://portupgrade.rubyforge.org/
+* {RubyForge homepage}[http://portupgrade.rubyforge.org]
+* FAQ[http://wiki.github.com/tdoan/port_upgrade/faq]
 
 == DESCRIPTION:
 
@@ -21,7 +22,7 @@ Updates your MacPorts while also removing old dependent versions of libraries an
 * Update your ports database from macports.org
   * sudo port selfupdate (or sync)
 * Run port_upgrade to generate a shell script
-  * port_upgrade -output upgrade.sh
+  * port_upgrade -o upgrade.sh
 * Run the shell script to update your ports tree
   * sudo ./upgrade.sh
 * There is no step 4
