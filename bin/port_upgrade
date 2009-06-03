@@ -8,5 +8,6 @@ require File.expand_path(File.dirname(__FILE__) + "/../lib/port_upgrade")
 
 require "port_upgrade/cli"
 require "port_upgrade/version"
+require "port_upgrade/port_upgrade_config"
 
 PortUpgrade::CLI.execute(STDOUT, ARGV)

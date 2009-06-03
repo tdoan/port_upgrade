@@ -42,6 +42,7 @@ module PortUpgrade
         end
         opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
           $stderr.puts "VERBOSE: #{v}"
+          $stderr.puts Ports::PortUpgradeConfig.instance.get_macports_db_path
           options.verbose = v
         end
       end
@@ -50,7 +51,7 @@ module PortUpgrade
         puts opts
         exit 1
       end
-      $verbose = true# if options.verbose
+      $verbose = true if options.verbose
       if options.portoutdated
         $stderr.print "Running port outdated..."
         outdated = `port outdated`.find_all{|l| (l =~ /(The following|No installed ports are outdated)/).nil? }.collect{|l| l.split[0]}
