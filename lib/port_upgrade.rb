@@ -32,8 +32,7 @@ end
 module Ports
   VERSION = '0.1.1'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
-  #MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
-  MACPORTS_DB = '/tmp'
+  MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
   SH_ERB_PATH = File.join(File.dirname(__FILE__),"port_upgrade","port_upgrade_sh.erb")
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
