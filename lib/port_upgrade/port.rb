@@ -1,7 +1,9 @@
+require 'port_upgrade/port_upgrade_config'
 module Ports
   class Port
     attr_reader :name,:versions,:portfile_path
-
+    @config = PortUpgradeConfig.instance.config
+    
     def initialize(portname,receipt_path=nil)
       receipt_path ||= RECEIPT_PATH
       tmpp = File.join(receipt_path,portname)
@@ -18,9 +20,9 @@ module Ports
         end
       end
 
-      Dir.entries(MACPORTS_DB).each do |d|
-        if File.directory?(File.join(MACPORTS_DB,d)) && d != '.' && d != '..'
-          testpath = File.join(MACPORTS_DB,d,@name,'Portfile')
+      Dir.entries(get_macports_db_path).each do |d|
+        if File.directory?(File.join(get_macports_db_path,d)) && d != '.' && d != '..'
+          testpath = File.join(get_macports_db_path,d,@name,'Portfile')
           if File.exist?(testpath)
             @portfile_path = testpath
             break
@@ -61,5 +63,10 @@ module Ports
       end
       result
     end
+
+    def get_macports_db_path
+      PortUpgradeConfig.instance.get_macports_db_path
+    end
+    
   end
 end

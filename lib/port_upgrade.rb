@@ -16,6 +16,7 @@ $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 require 'port_upgrade/port'
 require 'port_upgrade/version'
+require 'port_upgrade/port_upgrade_config'
 require 'yaml'
 require 'bz2'
 require 'find'
@@ -31,8 +32,8 @@ end
 module Ports
   VERSION = '0.1.1'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
-  MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
-  CONFIG_FILE = 'port_upgrade.conf'
+  #MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
+  MACPORTS_DB = '/tmp'
   SH_ERB_PATH = File.join(File.dirname(__FILE__),"port_upgrade","port_upgrade_sh.erb")
   Struct.new('Edge',:port,:dep,:level)
   class Struct::Edge
@@ -211,34 +212,10 @@ module Ports
       @installed = @pt.installed
       set_outdated(outdated)
       @to_remove = nil
-      config_file = locate_config_file
-      unless config_file.nil?
-        begin
-          @config = YAML::load(File.open(config_file))
-          @config = {} if @config == false
-        rescue Errno::ENOENT
-          $stderr.puts("No configuration loaded.")
-        rescue ArgumentError
-          $stderr.puts("Badly formed config file.")
-          exit(-1)
-        end
-      else
-        $stderr.puts("No configuration loaded.")
-      end
+      @config = PortUpgradeConfig.instance.config
+      
     end
     
-    def locate_config_file
-      to_search = []
-      local_dir = File.dirname($0).sub(/bin$/,"")
-      local_dir = local_dir == "" ? "." : local_dir
-      to_search << File.join(local_dir,"etc",Ports::CONFIG_FILE)
-      to_search << File.join(ENV['HOME'],"."+Ports::CONFIG_FILE)
-      to_search.each do |path|
-        return path if File.readable?(path)
-      end
-      return nil
-    end
-
     def installed
       @installed
     end
@@ -310,12 +287,12 @@ module Ports
               cats << (md[2].nil? ? md[1] : md[2].split.first)
             end
           end
-          portfile_path = File.join(MACPORTS_DB,cats.flatten,port,'Portfile')
+          portfile_path = File.join(get_macports_db_path,cats.flatten,port,'Portfile')
           unless File.exist?(portfile_path)
             $stderr.puts "Searching for #{port}'s Portfile"
-            Dir.entries(MACPORTS_DB).each do |d|
-              if File.directory?(File.join(MACPORTS_DB,d)) && d != '.' && d != '..'
-                testpath = File.join(MACPORTS_DB,d,port,'Portfile')
+            Dir.entries(get_macports_db_path).each do |d|
+              if File.directory?(File.join(get_macports_db_path,d)) && d != '.' && d != '..'
+                testpath = File.join(get_macports_db_path,d,port,'Portfile')
                 if File.exist?(testpath)
                    portfile_path = testpath
                    break
@@ -426,6 +403,10 @@ module Ports
       get_port_action(portname,:final_install)
     end
 
+    def get_macports_db_path
+      PortUpgradeConfig.instance.get_macports_db_path
+    end
+    
     def [](portname)
       Port.new(portname,@path)
     end
