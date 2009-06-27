@@ -34,7 +34,7 @@ class TestVersion < Test::Unit::TestCase
     xorg-util-macros               1.2.0_0 < 1.2.1_0         
     xrender                        0.9.4_1 < 0.9.4_4
 }
-  @tests = raw_tests.collect{|l| parts = l.split(" "); [parts[1],parts[3]] }
+  @tests = raw_tests.split("\n").collect{|l| parts = l.split(" "); [parts[1],parts[3]] }
   end
 
   def test_1

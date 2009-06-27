@@ -20,6 +20,7 @@ class TestPort < Test::Unit::TestCase
 
   context "A NoSuchPort instance" do
     setup do
+      @port = nil
     end
 
     should "raise NoSuchPort" do

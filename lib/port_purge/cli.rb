@@ -42,10 +42,9 @@ module PortPurge
         when /^(yes|y)$/i
           @to_remove << leaf
         when /^(quit|q)$/i
-          exit -1
+          exit(-1)
         when /^(skip|s)$/i
           break
-          $stderr.puts
         else
           @keep << leaf
         end
@@ -64,7 +63,7 @@ module PortPurge
         end
       else
         $stderr.puts "Exiting"
-        exit -1
+        exit(-1)
       end
     end
   end

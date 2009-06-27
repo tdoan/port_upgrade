@@ -9,6 +9,7 @@ module Ports
       tmpp = File.join(receipt_path,portname)
       @name = portname
       @versions = []
+      @portfile_path = nil
       if File.exist?(tmpp) and File.readable?(tmpp)
         @rp = tmpp
         Find.find(@rp) do |d|
