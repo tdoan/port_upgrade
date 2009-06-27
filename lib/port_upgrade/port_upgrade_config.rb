@@ -1,8 +1,11 @@
 require 'singleton'
+require 'yaml'
+
 module Ports
   CONFIG_FILE = 'port_upgrade.conf'
   class PortUpgradeConfig
     include Singleton
+    @@config=nil
     def locate_config_file
       to_search = []
       local_dir = File.dirname($0).sub(/bin$/,"")
@@ -26,14 +29,14 @@ module Ports
     end
     
     def config
-      return @config unless @config.nil?
+      return @@config unless @@config.nil?
 
       config_file = locate_config_file
       unless config_file.nil?
         begin
-          @config = YAML::load(File.open(config_file))
-          @config = {} if @config == false
-          return @config
+          @@config = YAML::load(File.open(config_file))
+          @@config = {} if @@config == false
+          return @@config
         rescue Errno::ENOENT
           throw "No configuration loaded."
         rescue ArgumentError
