@@ -293,9 +293,9 @@ module Ports
               if File.directory?(File.join(get_macports_db_path,d)) && d != '.' && d != '..'
                 testpath = File.join(get_macports_db_path,d,port,'Portfile')
                 if File.exist?(testpath)
-                   portfile_path = testpath
-                   break
-                 end
+                  portfile_path = testpath
+                  break
+                end
               end
             end
           end
@@ -307,10 +307,10 @@ module Ports
             if cmp.nil?
               $stderr.puts "Unable to compare versions: #{[port]}"
             else
-               if cmp < 0
-                 @outdated << port
-               end
-             end
+              if cmp < 0
+                @outdated << port
+              end
+            end
           else
             $stderr.puts "Unable to process Portfile (File Not Found) for #{port}"
           end
