@@ -36,6 +36,20 @@ Updates your MacPorts while also removing old dependent versions of libraries an
 
 * sudo gem install port_upgrade
 
+== Additional Usage Scenerios
+
+1) Uninstall a port on which other ports depend. Example with libiconv
+  
+<tt>port_upgrade --outdated=libiconv -o iconv_uninstall.sh</tt>
+
+<tt>./iconv_uninstall.sh uninstall</tt>
+  
+2) 
+
+== Known Bugs
+
+* Does not check epoch dates in Portfiles
+
 == LICENSE:
 
 Copyright (c) 2008 Tony Doan <tdoan@tdoan.com>
