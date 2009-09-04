@@ -32,6 +32,9 @@ module PortUpgrade
           options.checkoutdated = co
           $stderr.puts "CHECKOUTDATED: #{co}"
         end
+        opts.on("-p",'Add pid to the end of the outputfile') do 
+          options.pid = "." + Process.pid.to_s
+        end
         opts.on_tail("-V", "--version","Show version") do
           $stderr.puts "port_upgrade #{Ports::VERSION}"
           exit
@@ -52,6 +55,7 @@ module PortUpgrade
         exit 1
       end
       $verbose = true if options.verbose
+      options.output += options.pid if options.pid
       if options.portoutdated
         $stderr.print "Running port outdated..."
         outdated = `port outdated`.find_all{|l| (l =~ /(The following|No installed ports are outdated)/).nil? }.collect{|l| l.split[0]}
