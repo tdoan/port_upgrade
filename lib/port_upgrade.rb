@@ -205,6 +205,10 @@ module Ports
 
   class PortsDB
     def initialize(path=nil,outdated=nil)
+      mp_version_path = "/opt/local/var/macports/sources/rsync.macports.org/release/base//config/mp_version"
+      @mp_version = File.read("/opt/local/var/macports/sources/rsync.macports.org/release/base//config/mp_version").to_f
+      @needs_dash_x = @mp_version < 1.8
+      @dash_x = @needs_dash_x ? "-x" : ""
       @path=path
       @db = SQLite3::Database.new(':memory:')#('port_tree.db')
       @pt = PortTree.new(self,path)
@@ -359,7 +363,7 @@ module Ports
         end
         bi = get_before_install(port)
         uninstall_data << bi unless bi.nil?
-        install_data << "port #{get_force(port)} -x install #{port} #{remvariants[port][variantindex]} || exit -1"
+        install_data << "port #{get_force(port)} #{@dash_x} install #{port} #{remvariants[port][variantindex]} || exit -1"
         ai = get_after_install(port)
         fi = get_final_install(port)
         final << fi unless fi.nil?
