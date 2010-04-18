@@ -1,3 +1,4 @@
+require 'hoe'
 %w[rubygems rake rake/clean fileutils newgem rubigen].each { |f| require f }
 require File.dirname(__FILE__) + '/lib/port_upgrade.rb'
 GEM_HOME = File.join(RbConfig::CONFIG["libdir"],RbConfig::CONFIG["RUBY_INSTALL_NAME"],"gems")

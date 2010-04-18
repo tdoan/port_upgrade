@@ -8,6 +8,7 @@ lib/port_upgrade/cli.rb
 lib/port_upgrade/port.rb
 lib/port_upgrade/port_upgrade_sh.erb
 lib/port_upgrade/version.rb
+lib/port_upgrade/port_upgrade_config.rb
 bin/port_upgrade
 bin/port_purge
 etc/port_upgrade.conf.sample

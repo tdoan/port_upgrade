@@ -30,7 +30,7 @@ class String
 end
 
 module Ports
-  VERSION = '0.1.1'
+  VERSION = '0.1.2'
   RECEIPT_PATH = '/opt/local/var/macports/receipts'
   MACPORTS_DB='/opt/local/var/macports/sources/rsync.macports.org/release/ports'
   SH_ERB_PATH = File.join(File.dirname(__FILE__),"port_upgrade","port_upgrade_sh.erb")
